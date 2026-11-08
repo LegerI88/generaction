@@ -1,0 +1,1853 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mission Génér'Actions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Affiche pop de MJC : fond clair à trame BD, encre violette, aplats rose / bleu / jaune / menthe, stickers qui flottent et étoiles qui scintillent.
+     Layout : colonne centrale, barre collante, bandeau défilant des activités, ressources dans un panneau à droite, bulles BD en bas à gauche. */
+  --bg:#FFF8FC;
+  --card:#FFFFFF;
+  --ink:#24133F;
+  --muted:#5E4F7A;
+  --pink:#FF3EA5;
+  --blue:#2D5BFF;
+  --yellow:#FFD23F;
+  --mint:#18CFA0;
+  --orange:#FF7A2F;
+  --lilac:#EDE6FF;
+  --ok:#0E9F6E;
+  --ko:#E0234E;
+  --display:"Bricolage Grotesque","Arial Black",system-ui,sans-serif;
+  --body:"DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --radius:18px;
+  --shadow:5px 5px 0 var(--ink);
+  --drawer:min(520px,94vw);
+  color-scheme: light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html{scroll-behavior:smooth;scroll-padding-top:86px}
+body{margin:0;background-color:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;overflow-x:hidden;
+  background-image:radial-gradient(rgba(255,62,165,.13) 1.6px,transparent 1.7px);background-size:18px 18px}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.05;text-wrap:balance;margin:0;letter-spacing:-.02em}
+h2{font-size:clamp(1.7rem,3.6vw,2.5rem);font-weight:800}
+h3{font-size:1.18rem;font-weight:800}
+p{margin:0}
+a{color:var(--blue);font-weight:700}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 18px}
+.stack{display:flex;flex-direction:column;gap:16px}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}
+.prose{max-width:68ch}
+#main{transition:margin-right .3s}
+@media (min-width:1100px){body.drawer-open #main{margin-right:var(--drawer)}}
+.grad{color:var(--pink)}
+
+/* ---------- barre ---------- */
+.topbar{position:sticky;top:0;z-index:20;background:#fff;border-bottom:3px solid var(--ink)}
+.topbar .wrap{display:flex;align-items:center;gap:12px;min-height:62px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px;max-width:1320px}
+.brand{font-family:var(--display);font-weight:800;font-size:1.15rem;white-space:nowrap}
+.brand .grad{background:var(--yellow);color:var(--ink);padding:2px 8px;border:2px solid var(--ink);border-radius:8px;box-shadow:3px 3px 0 var(--pink);display:inline-block;transform:rotate(-2deg)}
+.nav{display:flex;gap:2px;flex-wrap:wrap;flex:1}
+.nav a{color:var(--ink);text-decoration:none;font-weight:700;font-size:.88rem;padding:5px 9px;border-radius:999px}
+.nav a:hover{background:var(--lilac)}
+.top-btn{cursor:pointer;border:2px solid var(--ink);background:#fff;font-weight:800;border-radius:999px;padding:5px 12px;white-space:nowrap;box-shadow:2px 2px 0 var(--ink);transition:transform .15s}
+.top-btn:hover{transform:translate(-1px,-1px) rotate(-2deg)}
+.top-btn.hl{background:var(--yellow)}
+.rank{font-family:var(--display);font-weight:800;font-size:.8rem;background:var(--pink);color:#fff;border:2px solid var(--ink);border-radius:999px;padding:3px 10px;white-space:nowrap}
+.xp{display:flex;align-items:center;gap:10px;min-width:190px}
+.xp-bar{flex:1;height:14px;border-radius:999px;background:#fff;overflow:hidden;border:2px solid var(--ink)}
+.xp-fill{height:100%;width:0;background:repeating-linear-gradient(-45deg,var(--pink) 0 8px,var(--orange) 8px 16px);background-size:23px 23px;animation:stripes 1s linear infinite;transition:width .6s cubic-bezier(.3,1.5,.5,1)}
+@keyframes stripes{to{background-position:23px 0}}
+.xp-text{font-family:var(--display);font-weight:800;font-size:.85rem;white-space:nowrap;font-variant-numeric:tabular-nums}
+.badges{display:flex;gap:5px}
+.badge{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-size:.95rem;background:#fff;border:2px dashed var(--muted);filter:grayscale(1);opacity:.5;transition:all .4s}
+.badge.on{filter:none;opacity:1;background:var(--yellow);border:2px solid var(--ink);animation:badgeOn .8s}
+@keyframes badgeOn{0%{transform:scale(.3) rotate(-200deg)}70%{transform:scale(1.3) rotate(10deg)}100%{transform:scale(1) rotate(-6deg)}}
+@media (max-width:1020px){.nav{display:none}.xp{min-width:0;flex:1}}
+
+/* ---------- panneau des ressources ---------- */
+.drawer{position:fixed;top:0;right:0;height:100%;width:var(--drawer);background:#fff;border-left:3px solid var(--ink);box-shadow:-8px 0 0 rgba(36,19,63,.12);transform:translateX(105%);transition:transform .35s cubic-bezier(.3,1.3,.5,1);z-index:40;display:flex;flex-direction:column;visibility:hidden}
+.drawer.open{transform:none;visibility:visible}
+.drawer-head{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--yellow);border-bottom:3px solid var(--ink)}
+.drawer-head h3{flex:1;font-size:1.05rem}
+.drawer-nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px;border-bottom:2px solid var(--ink);background:var(--lilac)}
+.drawer-nav button{cursor:pointer;border:2px solid var(--ink);background:#fff;border-radius:999px;padding:1px 9px;font-weight:800;font-size:.8rem}
+.drawer-nav button.cur{background:var(--pink);color:#fff}
+.drawer-body{padding:16px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:12px;font-size:.95rem}
+.drawer-body > *{flex-shrink:0}
+.drawer-body .doc{box-shadow:none}
+
+/* ---------- hero affiche ---------- */
+.hero{position:relative;overflow:hidden;padding:54px 0 64px;background:
+  radial-gradient(circle at 85% 20%,rgba(255,210,63,.55) 0 120px,transparent 121px),
+  radial-gradient(circle at 10% 90%,rgba(24,207,160,.35) 0 90px,transparent 91px),
+  linear-gradient(135deg,#FFE3F2 0%,#FFF8FC 45%,#E6EDFF 100%)}
+.hero::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(45,91,255,.18) 2px,transparent 2.2px);background-size:22px 22px;mask-image:linear-gradient(90deg,transparent 40%,#000);-webkit-mask-image:linear-gradient(90deg,transparent 40%,#000);pointer-events:none}
+.hero-grid{position:relative;display:grid;grid-template-columns:1.35fr 1fr;gap:32px;align-items:center}
+@media (max-width:860px){.hero-grid{grid-template-columns:1fr}}
+.kicker{display:inline-flex;gap:8px;align-items:center;font-family:var(--display);font-weight:800;font-size:.85rem;background:var(--ink);color:#fff;padding:6px 14px;border-radius:999px;transform:rotate(-2deg)}
+.kicker .live{width:9px;height:9px;border-radius:50%;background:var(--yellow);animation:blinkdot 1.2s infinite}
+@keyframes blinkdot{50%{opacity:.2}}
+.hero h1{font-size:clamp(3rem,8vw,6rem);font-weight:800;margin:18px 0 14px;line-height:.9;text-transform:uppercase;letter-spacing:-.03em}
+.glitch{display:inline-block;color:#fff;-webkit-text-stroke:3px var(--ink);text-shadow:5px 5px 0 var(--blue),10px 10px 0 var(--ink);animation:wob 3.5s ease-in-out infinite}
+.glitch::before,.glitch::after{content:none}
+.hero h1 .grad{display:inline-block;color:var(--pink);text-shadow:4px 4px 0 var(--yellow),8px 8px 0 var(--ink)}
+@keyframes wob{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(1.5deg) translateY(-3px)}}
+.hero .lead{font-size:1.15rem;max-width:56ch}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-weight:800;font-size:.84rem;padding:5px 12px;border-radius:999px;border:2px solid var(--ink);background:#fff}
+.chip.hl{background:var(--yellow)}
+.agent{position:relative;background:#fff;border:3px solid var(--ink);border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:12px;box-shadow:8px 8px 0 var(--pink);transform:rotate(1.5deg)}
+.agent::before{content:"ACCÈS STAGIAIRE";position:absolute;top:-16px;left:20px;background:var(--mint);color:var(--ink);border:2px solid var(--ink);font-family:var(--display);font-weight:800;font-size:.75rem;padding:3px 10px;border-radius:8px;transform:rotate(-4deg)}
+.agent .label{display:none}
+.agent h3{font-size:1.4rem}
+.agent input{width:100%;border:2.5px solid var(--ink);background:#fff;border-radius:12px;padding:11px 14px;font-weight:800;font-size:1.1rem}
+.agent input:focus{outline:none;box-shadow:0 0 0 4px rgba(255,62,165,.25)}
+.agent .hello{font-family:var(--display);font-weight:800;min-height:1.4em;color:var(--pink)}
+.sticker{position:absolute;pointer-events:none;filter:drop-shadow(3px 3px 0 var(--ink));animation:floaty 6s ease-in-out infinite}
+.sticker.s1{top:22px;right:4%;width:76px;animation-delay:-1s}
+.sticker.s2{bottom:30px;right:40%;width:60px;animation-delay:-3s}
+.sticker.s3{top:46%;left:-6px;width:58px;animation-delay:-2s}
+.sticker.s4{bottom:24px;right:6%;width:70px;animation-delay:-4s}
+@keyframes floaty{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-14px) rotate(8deg)}}
+.spark{position:absolute;width:22px;height:22px;pointer-events:none;animation:twinkle 2.2s ease-in-out infinite}
+.spark::before{content:"✦";position:absolute;inset:0;display:grid;place-items:center;font-size:22px;color:var(--yellow);-webkit-text-stroke:1px var(--ink)}
+.spark.p{animation-delay:-.7s}.spark.p::before{color:var(--pink)}
+.spark.b{animation-delay:-1.4s}.spark.b::before{color:var(--blue)}
+@keyframes twinkle{0%,100%{transform:scale(.3) rotate(0);opacity:0}50%{transform:scale(1.15) rotate(45deg);opacity:1}}
+
+/* ---------- bandeau défilant ---------- */
+.marquee{background:var(--pink);color:#fff;border-top:3px solid var(--ink);border-bottom:3px solid var(--ink);overflow:hidden;white-space:nowrap;transform:rotate(-1deg);margin:-12px -10px 0;position:relative;z-index:2}
+.marquee .track-m{display:inline-flex;gap:28px;padding:10px 0;animation:marq 26s linear infinite;font-family:var(--display);font-weight:800;font-size:1.15rem;text-transform:uppercase}
+.marquee span.st{color:var(--yellow)}
+.marquee.m2{background:var(--yellow);color:var(--ink);transform:rotate(1deg);margin-top:-6px;z-index:1}
+.marquee.m2 .track-m{animation-direction:reverse;animation-duration:32s}
+.marquee.m2 span.st{color:var(--pink)}
+@keyframes marq{to{transform:translateX(-50%)}}
+
+/* ---------- roadmap ---------- */
+.board{padding:28px 0 30px;background:var(--blue);color:#fff;border-bottom:3px solid var(--ink);position:relative}
+.board::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.18) 2px,transparent 2.2px);background-size:20px 20px;pointer-events:none}
+.board .wrap{position:relative}
+.board h2{font-size:1.3rem;margin-bottom:6px}
+.track{position:relative;display:grid;grid-template-columns:repeat(6,1fr);gap:4px;padding-top:34px}
+.track::before{content:"";position:absolute;left:8%;right:8%;top:60px;border-top:5px dotted rgba(255,255,255,.7)}
+.station{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;color:#fff;text-decoration:none;font-weight:800;font-size:.85rem}
+.station .dot{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-size:1.35rem;background:#fff;border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);transition:all .4s}
+.station.done .dot{background:var(--yellow);transform:scale(1.1) rotate(-8deg)}
+.station:hover .dot{transform:scale(1.15) rotate(8deg)}
+.token{position:absolute;top:0;left:0;width:calc(100% / 6);display:flex;justify-content:center;transition:transform 1s cubic-bezier(.4,1.6,.5,1);pointer-events:none}
+.token .you{font-family:var(--display);font-weight:800;font-size:.8rem;color:var(--ink);background:var(--yellow);border:2px solid var(--ink);padding:2px 10px;border-radius:999px;box-shadow:2px 2px 0 var(--ink);animation:bob 1s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-5px) rotate(-4deg)}}
+
+/* ---------- sections ---------- */
+section{padding:54px 0}
+section.alt{background:rgba(255,255,255,.75);border-top:3px solid var(--ink);border-bottom:3px solid var(--ink)}
+.sec-head{display:flex;gap:18px;align-items:flex-start;margin-bottom:24px}
+.sec-num{flex:none;font-family:var(--display);font-weight:800;font-size:2.4rem;line-height:1;width:76px;height:76px;display:grid;place-items:center;background:var(--yellow);border:3px solid var(--ink);border-radius:50%;box-shadow:4px 4px 0 var(--pink);transform:rotate(-8deg);transition:transform .3s}
+.sec-head:hover .sec-num{transform:rotate(10deg) scale(1.08)}
+section:nth-of-type(3n+1) .sec-num{background:var(--mint)}
+section:nth-of-type(3n+2) .sec-num{background:var(--pink);color:#fff}
+.sec-head p{color:var(--muted);margin-top:8px;max-width:70ch}
+
+.card{background:var(--card);border:2.5px solid var(--ink);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+.card h3{margin-bottom:8px}
+.tag{display:inline-block;font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:6px;border:2px solid var(--ink);vertical-align:middle}
+.tag.real{background:var(--mint)}
+.tag.fake{background:var(--pink);color:#fff}
+.tag.calc{background:var(--yellow)}
+.tag.notion{background:var(--blue);color:#fff}
+.tag.fill{background:var(--lilac);text-transform:none;letter-spacing:0;font-size:.78rem}
+.src{font-size:.82rem;color:var(--muted)}
+.note{border-left:6px solid var(--pink);background:#FFE9F5;padding:12px 14px;border-radius:0 12px 12px 0}
+.ann-chip{cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-weight:800;font-size:.8rem;color:var(--ink);background:var(--yellow);border:2px solid var(--ink);border-radius:999px;padding:2px 10px;text-decoration:none;white-space:nowrap;transition:transform .15s}
+.ann-chip:hover{transform:translateY(-2px) rotate(-3deg);background:#FFE27A}
+.ann-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.82rem;font-weight:700;color:var(--muted)}
+
+/* message */
+.mail{background:#fff;border:2.5px solid var(--ink);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.mail-head{background:var(--blue);color:#fff;padding:12px 18px;display:grid;gap:2px;font-size:.92rem}
+.mail-head b{color:var(--yellow)}
+.mail-body{padding:20px 22px;display:flex;flex-direction:column;gap:12px}
+.avatar{width:52px;height:52px;border-radius:50%;background:var(--pink);color:#fff;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:1.2rem;border:3px solid var(--ink);flex:none}
+.goals{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.goal{border:2.5px solid var(--ink);border-radius:14px;padding:12px;background:var(--lilac);transition:transform .2s}
+.goal:nth-child(2){background:#FFF3C4}.goal:nth-child(3){background:#D9FBF0}
+.goal:hover{transform:rotate(-1.5deg) scale(1.02)}
+.goal b{font-family:var(--display);font-size:1.05rem}
+.howto{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.howto div{border:2.5px solid var(--ink);border-radius:14px;padding:12px;background:#fff;box-shadow:3px 3px 0 var(--ink)}
+.howto b{font-family:var(--display);color:var(--pink)}
+
+/* cartes à révéler */
+.flip{perspective:900px;cursor:pointer;min-height:160px;border:none;background:none;padding:0;text-align:left}
+.flip-in{position:relative;width:100%;height:100%;min-height:160px;transition:transform .6s cubic-bezier(.3,1.4,.5,1);transform-style:preserve-3d}
+.flip.on .flip-in{transform:rotateY(180deg)}
+.flip-face{position:absolute;inset:0;border:2.5px solid var(--ink);border-radius:16px;padding:14px;box-shadow:4px 4px 0 var(--ink);backface-visibility:hidden;display:flex;flex-direction:column;justify-content:center;gap:6px}
+.flip-front{background:var(--blue);color:#fff}
+.flip:nth-child(2) .flip-front{background:var(--pink)}
+.flip:nth-child(3) .flip-front{background:var(--mint);color:var(--ink)}
+.flip:nth-child(4) .flip-front{background:var(--orange)}
+.flip:hover .flip-in{transform:rotate(-2deg)}
+.flip.on:hover .flip-in{transform:rotateY(180deg)}
+.flip-front b{font-family:var(--display);font-size:1.05rem}
+.flip-front small{font-weight:800;letter-spacing:.1em;text-transform:uppercase;font-size:.7rem;opacity:.85}
+.flip-back{background:var(--yellow);transform:rotateY(180deg)}
+.flip-back .big{font-family:var(--display);font-weight:800;font-size:2.2rem;line-height:1}
+
+/* téléphone mission 3 */
+.phone-scene{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.lock{width:240px;border-radius:30px;padding:16px 12px 18px;background:linear-gradient(160deg,var(--blue),var(--pink));border:3px solid var(--ink);box-shadow:6px 6px 0 var(--ink);transform:rotate(3deg)}
+.lock .time{font-family:var(--display);font-weight:800;font-size:2.1rem;text-align:center;color:#fff}
+.lock .date{text-align:center;font-size:.78rem;color:#fff;margin-bottom:12px;font-weight:700}
+
+/* activités */
+.activity{background:#fff;border:2.5px solid var(--ink);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;display:flex;flex-direction:column;gap:14px;transition:transform .2s,box-shadow .2s}
+.activity:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--pink)}
+.act-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.act-head h3{flex:1;min-width:200px}
+.xp-pill{font-family:var(--display);font-weight:800;font-size:.8rem;background:var(--ink);color:var(--yellow);padding:3px 10px;border-radius:999px}
+.consigne{font-weight:700}
+.tf,.qcm-item,.sel-row{border:2px solid var(--ink);border-radius:14px;padding:12px 14px;background:#FCFAFF;display:flex;flex-direction:column;gap:8px;transition:background .3s,border-color .3s}
+.q{font-weight:700;display:flex;gap:10px}
+.num{flex:none;width:26px;height:26px;border-radius:50%;background:var(--pink);color:#fff;border:2px solid var(--ink);display:grid;place-items:center;font-size:.78rem;font-weight:800}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{cursor:pointer;border:2.5px solid var(--ink);background:#fff;border-radius:12px;padding:7px 14px;font-weight:800;box-shadow:3px 3px 0 var(--ink);transition:transform .1s,box-shadow .1s,background .2s;text-align:left}
+.btn:hover{transform:translate(-1px,-2px) rotate(-1deg);box-shadow:4px 5px 0 var(--ink)}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.btn.primary{background:var(--blue);color:#fff}
+.btn.big{font-family:var(--display);font-size:1.05rem;padding:11px 18px;background:var(--pink);color:#fff;box-shadow:4px 4px 0 var(--ink)}
+.btn.big:hover{background:#FF5BB3}
+.btn.chosen{background:var(--blue);color:#fff}
+.btn.chosen::after{content:" ✓"}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+.answered{border-color:var(--blue) !important;background-color:#F1F4FF !important}
+select.answered{background-color:#EAF0FF !important}
+.t-ok{border-color:var(--ok) !important;background-color:#DDF8EC !important;outline:3px solid var(--ok)}
+.t-ko{border-color:var(--ko) !important;background-color:#FFE3E8 !important;outline:3px solid var(--ko)}
+.btn.chosen.t-ok,.btn.chosen.t-ko{color:var(--ink)}
+.corr-ans{display:inline-block;font-weight:800;color:var(--ok);background:#DDF8EC;border:2px solid var(--ok);border-radius:8px;padding:0 6px;margin:0 4px;line-height:1.6}
+.saved{color:var(--blue);font-weight:800}
+.fb{font-size:.95rem}
+.fb:empty{display:none}
+select{border:2.5px solid var(--ink);border-radius:10px;padding:6px 8px;background:#fff;font-weight:700;max-width:100%;cursor:pointer}
+input[type=number],input[type=text],input[type=password]{border:2.5px solid var(--ink);border-radius:10px;padding:7px 10px;background:#fff;font-weight:700;width:160px;max-width:100%}
+input[type=checkbox]{accent-color:var(--pink)}
+
+/* tri */
+.pool{display:flex;flex-wrap:wrap;gap:10px;min-height:52px;padding:12px;border:2.5px dashed var(--muted);border-radius:14px;background:#FFF5FA;cursor:pointer}
+.pool:empty::after{content:"Toutes les cartes sont rangées. Tu peux encore les déplacer.";font-weight:800;color:var(--blue)}
+.sort-card{cursor:grab;border:2.5px solid var(--ink);background:#fff;border-radius:12px;padding:8px 12px;font-weight:700;box-shadow:3px 3px 0 var(--ink);text-align:left;max-width:100%;transition:transform .15s}
+.sort-card:hover{transform:rotate(-2deg) translateY(-2px)}
+.sort-card.sel{background:var(--yellow);transform:rotate(-3deg) scale(1.05)}
+.sort-card.placed{box-shadow:2px 2px 0 var(--blue);border-color:var(--blue);font-size:.9rem;animation:land .4s}
+@keyframes land{0%{transform:scale(1.25) rotate(4deg)}100%{transform:scale(1)}}
+.bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.bin{border:2.5px solid var(--ink);border-radius:16px;padding:12px;min-height:130px;display:flex;flex-direction:column;gap:8px;cursor:pointer;transition:transform .15s}
+.bin:hover,.bin.over{transform:translateY(-3px) rotate(-.5deg)}
+.bin-title{font-family:var(--display);font-weight:800;font-size:1.05rem}
+.bin-hint{font-size:.82rem}
+.bin.b1{background:#FFF1C2}.bin.b2{background:#D6FAEE}.bin.b3{background:#E1E8FF}
+
+/* schéma des flux */
+.diagram{width:100%;max-width:680px;margin:0 auto;display:block}
+.diagram .node rect{fill:#fff;stroke:var(--ink);stroke-width:3}
+.diagram .center rect{fill:var(--yellow)}
+.diagram .center{animation:pulse 2s ease-in-out infinite;transform-origin:340px 180px}
+@keyframes pulse{50%{transform:scale(1.04)}}
+.diagram text{font-family:var(--body);font-weight:800;fill:var(--ink)}
+.diagram .link{stroke:#D3C9EA;stroke-width:6;stroke-linecap:round;stroke-dasharray:2 12;transition:stroke .4s}
+.diagram .link.on{stroke:var(--pink);stroke-dasharray:14 8;animation:dash 1.2s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-44}}
+.flow-row{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:10px;align-items:center;border:2px solid var(--ink);border-radius:14px;padding:10px 12px;background:#FCFAFF}
+.flow-row p{font-weight:700;font-size:.95rem}
+@media (max-width:760px){.flow-row{grid-template-columns:1fr}}
+
+/* ressources */
+.doc{background:#fff;border:2px solid var(--ink);border-radius:6px;padding:20px 22px;box-shadow:var(--shadow);font-size:.95rem;position:relative;display:flex;flex-direction:column;gap:8px}
+.doc h4{font-size:1.1rem;padding-right:110px}
+.doc .stamp{position:absolute;top:14px;right:14px;transform:rotate(8deg);border:3px solid var(--pink);color:var(--pink);font-family:var(--display);font-weight:800;padding:2px 10px;border-radius:8px;font-size:.8rem;letter-spacing:.08em}
+.doc .art b{font-family:var(--display)}
+.law{border-left:5px solid var(--blue);padding:8px 12px;background:#EEF2FF;border-radius:0 10px 10px 0;font-size:.93rem}
+.sms{max-width:240px;background:rgba(255,255,255,.92);border-radius:16px;padding:10px 12px;font-size:.86rem;border:2px solid var(--ink);animation:notif 4s ease-in-out infinite}
+@keyframes notif{0%,100%{transform:translateY(0)}8%{transform:translateY(-6px) rotate(-1deg)}16%{transform:translateY(0)}}
+.sms small{display:block;color:var(--muted);font-weight:800;margin-bottom:2px}
+.def{border:2px solid var(--ink);border-radius:12px;padding:10px 12px;background:#fff}
+.def b{font-family:var(--display)}
+details.annex{border:2.5px solid var(--ink);border-radius:16px;background:#fff;box-shadow:4px 4px 0 var(--ink);overflow:hidden}
+details.annex summary{cursor:pointer;padding:14px 18px;font-family:var(--display);font-weight:800;font-size:1.05rem;display:flex;gap:10px;align-items:center;list-style:none}
+details.annex summary::-webkit-details-marker{display:none}
+details.annex summary::after{content:"+";margin-left:auto;font-size:1.5rem;line-height:1}
+details.annex[open] summary::after{content:"–"}
+details.annex[open] summary{border-bottom:2.5px solid var(--ink);background:var(--yellow)}
+.annex-body{padding:18px;display:flex;flex-direction:column;gap:12px}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1.5px solid var(--ink);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:var(--lilac)}
+td.num-c{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl{overflow-x:auto}
+
+/* lettre */
+.letter{background:#fff;border:2px solid var(--ink);border-radius:4px;padding:24px;font-size:.95rem;white-space:pre-wrap;font-family:var(--body);box-shadow:var(--shadow);line-height:1.6}
+.cloze{font-size:1.05rem;line-height:2.3}
+.cloze select{margin:0 3px}
+
+/* correction enseignant */
+.corr-zone{border-top:2px dashed var(--muted);padding-top:12px;display:flex;flex-direction:column;gap:10px}
+.corr-btn{align-self:flex-start;cursor:pointer;border:2px solid var(--ink);background:var(--lilac);border-radius:999px;padding:4px 14px;font-weight:800;font-size:.85rem}
+.corr-btn:hover{background:#DCD2FF}
+.corr-expl{border:2px solid var(--ok);border-left:7px solid var(--ok);border-radius:10px;background:#F0FFF8;padding:8px 12px;font-size:.93rem;animation:unfold .4s}
+.corr-expl::before{content:"Corrigé · ";font-weight:800;color:var(--ok)}
+.corr-expl.note::before{content:"À retenir · "}
+.corr-expl.no-pre::before{content:none}
+@keyframes unfold{from{opacity:0;transform:translateY(-8px)}}
+
+/* modales */
+.modal{position:fixed;inset:0;background:rgba(36,19,63,.5);display:none;align-items:center;justify-content:center;z-index:70;padding:16px}
+.modal.open{display:flex}
+.modal-card{background:#fff;border:3px solid var(--ink);border-radius:22px;box-shadow:8px 8px 0 var(--pink);padding:24px;max-width:440px;width:100%;display:flex;flex-direction:column;gap:12px;animation:modalIn .45s cubic-bezier(.3,1.6,.5,1)}
+@keyframes modalIn{from{transform:scale(.6) rotate(-6deg);opacity:0}}
+.modal-card.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+.modal-card input{width:100%;font-size:1.1rem;letter-spacing:.1em;text-transform:uppercase}
+
+/* bulles BD */
+.toasts{position:fixed;left:16px;bottom:16px;z-index:65;display:flex;flex-direction:column;gap:12px;width:min(320px,calc(100vw - 32px));pointer-events:none}
+.toast{position:relative;display:flex;gap:10px;align-items:center;background:#fff;border:2.5px solid var(--ink);border-radius:18px;padding:10px 12px;box-shadow:4px 4px 0 var(--ink);animation:toastIn .45s cubic-bezier(.3,1.6,.5,1)}
+.toast::after{content:"";position:absolute;left:22px;bottom:-11px;width:16px;height:16px;background:#fff;border-right:2.5px solid var(--ink);border-bottom:2.5px solid var(--ink);transform:rotate(45deg) skew(10deg,10deg)}
+.toast.out{animation:toastOut .3s forwards}
+@keyframes toastIn{from{transform:scale(.5) rotate(-8deg);opacity:0}}
+@keyframes toastOut{to{transform:scale(.6);opacity:0}}
+.toast .ic{flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--pink);color:#fff;border:2px solid var(--ink);font-family:var(--display);font-weight:800;font-size:.78rem}
+.toast small{display:block;color:var(--muted);font-size:.72rem;font-weight:800}
+.toast p{font-size:.9rem;font-weight:700}
+.toast.achv{background:var(--yellow)}
+.toast.achv::after{background:var(--yellow)}
+.toast.achv .ic{background:#fff;font-size:1.1rem}
+.toast.achv small{color:var(--ink);letter-spacing:.12em;text-transform:uppercase}
+.toast.rankup{background:var(--blue);color:#fff}
+.toast.rankup::after{background:var(--blue)}
+.toast.rankup small{color:#DCE4FF}
+.toast.rankup .ic{background:var(--yellow);color:var(--ink)}
+.float-xp{position:fixed;z-index:65;font-family:var(--display);font-weight:800;font-size:1.3rem;color:var(--pink);-webkit-text-stroke:1px var(--ink);pointer-events:none;animation:floatUp 1.1s forwards}
+@keyframes floatUp{to{transform:translateY(-70px) scale(1.3) rotate(-8deg);opacity:0}}
+
+/* fin de mission */
+.gauge{position:relative;height:22px;border:3px solid var(--ink);border-radius:999px;background:#fff;overflow:hidden;margin-top:16px}
+.gauge-fill{height:100%;width:0;background:linear-gradient(90deg,var(--pink),var(--orange),var(--yellow),var(--mint));transition:width 2s cubic-bezier(.3,1,.4,1)}
+.gauge-mark{position:absolute;top:-3px;bottom:-3px;border-left:4px dashed var(--ink)}
+.score-big{font-family:var(--display);font-weight:800;font-size:clamp(3.2rem,11vw,6rem);text-align:center;line-height:1.05;font-variant-numeric:tabular-nums;color:var(--pink);text-shadow:4px 4px 0 var(--yellow),8px 8px 0 var(--ink)}
+.score-sub{text-align:center;font-weight:800}
+
+/* pass de fin : billet d'événement */
+.cert-wrap{display:flex;justify-content:center}
+.cert{position:relative;width:min(560px,100%);display:grid;grid-template-columns:1fr 150px;border:3px solid var(--ink);border-radius:22px;background:#fff;box-shadow:8px 8px 0 var(--pink);overflow:hidden;transform:rotate(-1.5deg)}
+.cert-in{position:relative;overflow:hidden;padding:22px 22px 18px;background:linear-gradient(135deg,#FFE3F2,#FFF6D1 50%,#DDF9EF)}
+.cert-in::after{content:"";position:absolute;inset:-50%;background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.75) 50%,transparent 58%);animation:shine 3.2s ease-in-out infinite;pointer-events:none}
+@keyframes shine{0%{transform:translateX(-45%)}60%,100%{transform:translateX(45%)}}
+.cert .foot{font-size:.75rem;font-weight:800;letter-spacing:.06em;color:var(--muted)}
+.cert .pass-title{font-family:var(--display);font-weight:800;font-size:1.6rem;line-height:1}
+.cert .who{font-family:var(--display);font-weight:800;font-size:2rem;margin:10px 0 0;color:var(--pink);text-transform:uppercase;line-height:1}
+.cert .role{display:inline-block;margin-top:6px;background:var(--ink);color:var(--yellow);font-weight:800;font-size:.75rem;letter-spacing:.06em;padding:3px 10px;border-radius:999px;text-transform:uppercase}
+.cert .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:14px 0 10px}
+.cert .stats div{background:#fff;border:2px solid var(--ink);border-radius:10px;padding:5px 2px;text-align:center}
+.cert .stats b{display:block;font-family:var(--display);font-size:1.05rem}
+.cert .stats span{font-size:.62rem;font-weight:800;letter-spacing:.1em;color:var(--muted)}
+.cert .stub{border-left:3px dashed var(--ink);background:var(--blue);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:14px 8px;text-align:center;position:relative}
+.cert .stub::before,.cert .stub::after{content:"";position:absolute;left:-14px;width:24px;height:24px;border-radius:50%;background:var(--bg);border:3px solid var(--ink)}
+.cert .stub::before{top:-14px}.cert .stub::after{bottom:-14px}
+.cert .ovr{font-family:var(--display);font-weight:800;font-size:2.6rem;line-height:1;color:var(--yellow);-webkit-text-stroke:1.5px var(--ink)}
+.cert .ovr small{display:block;font-size:.65rem;letter-spacing:.14em;color:#fff;-webkit-text-stroke:0;margin-top:4px}
+.cert .stub .adm{font-family:var(--display);font-weight:800;font-size:.85rem;background:var(--yellow);color:var(--ink);border:2px solid var(--ink);border-radius:8px;padding:2px 8px;transform:rotate(-6deg)}
+@media (max-width:520px){.cert{grid-template-columns:1fr}.cert .stub{border-left:none;border-top:3px dashed var(--ink)}.cert .stub::before,.cert .stub::after{display:none}}
+.cert-locked{border:3px dashed var(--ink);border-radius:22px;padding:26px;text-align:center;background:#fff}
+.cert-locked .lockic{font-size:2rem}
+.reveal{animation:modalIn 1s cubic-bezier(.3,1.5,.5,1)}
+
+body.locked .sort-card,body.locked .bin,body.locked .pool{pointer-events:none}
+footer{padding:30px 0 120px;font-size:.88rem;color:var(--muted)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:60}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important;scroll-behavior:auto !important}}
+</style>
+</head>
+<body>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand"><span class="grad">GÉNÉR'ACTIONS</span></div>
+    <nav class="nav" aria-label="Étapes du cours">
+      <a href="#briefing">Contexte</a>
+      <a href="#entreprise">Structures</a>
+      <a href="#mission-1">Mission 1</a>
+      <a href="#mission-2">Mission 2</a>
+      <a href="#mission-3">Mission 3</a>
+      <a href="#bilan">Bilan</a>
+    </nav>
+    <button type="button" class="top-btn hl" data-ann="index">Ressources</button>
+    <span class="rank" id="rank" title="Ton rang monte avec tes réponses">Rang · Stagiaire</span>
+    <button type="button" class="top-btn ghost" id="soundBtn" aria-pressed="false" title="Activer ou couper le son">🔇 Son</button>
+    <div class="xp" aria-live="polite">
+      <div class="xp-bar" role="progressbar" aria-label="Points d'expérience" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="xpBar"><div class="xp-fill" id="xpFill"></div></div>
+      <span class="xp-text" id="xpText">0 XP</span>
+    </div>
+    <div class="badges" aria-label="Badges">
+      <span class="badge" data-group="ech" title="Badge Échauffement">⚡</span>
+      <span class="badge" data-group="m1" title="Badge Détective du secteur">🔎</span>
+      <span class="badge" data-group="m2" title="Badge Maître des flux">🔄</span>
+      <span class="badge" data-group="m3" title="Badge Juriste junior">⚖️</span>
+      <span class="badge" data-group="bilan" title="Badge Mission accomplie">🏆</span>
+    </div>
+  </div>
+</header>
+
+<aside class="drawer" id="drawer" role="dialog" aria-labelledby="drawerTitle" aria-hidden="true">
+  <div class="drawer-head">
+    <h3 id="drawerTitle">Ressources</h3>
+    <button type="button" class="btn" id="drawerClose">Fermer ✕</button>
+  </div>
+  <div class="drawer-nav" id="drawerNav" aria-label="Choisir une ressource"></div>
+  <div class="drawer-body" id="drawerBody"></div>
+</aside>
+
+<div class="modal" id="codeModal" role="dialog" aria-modal="true" aria-labelledby="codeTitle">
+  <form class="modal-card" id="codeForm">
+    <h3 id="codeTitle">Espace enseignant</h3>
+    <p id="codeFor">Entrez le code enseignant pour afficher le corrigé et les explications.</p>
+    <label for="codeInput" style="font-weight:800">Code enseignant</label>
+    <input type="password" id="codeInput" autocomplete="off" spellcheck="false">
+    <p class="fb" id="codeFb" aria-live="polite"></p>
+    <div class="row"><button type="submit" class="btn primary" id="codeOk">Déverrouiller</button><button type="button" class="btn" id="codeCancel">Annuler</button></div>
+  </form>
+</div>
+
+<div class="modal" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+  <div class="modal-card">
+    <h3 id="confirmTitle">Terminer la mission ?</h3>
+    <p id="confirmText"></p>
+    <div class="row"><button type="button" class="btn primary" id="confirmYes">Oui, je termine</button><button type="button" class="btn" id="confirmNo">Non, je continue</button></div>
+  </div>
+</div>
+
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<div id="main">
+<!-- ================= HERO ================= -->
+<div class="hero" id="accueil">
+  <svg class="sticker s1" viewBox="0 0 60 60" aria-hidden="true"><rect x="4" y="4" width="52" height="52" rx="12" fill="#fff" stroke="#24133F" stroke-width="4"/><circle cx="18" cy="18" r="5" fill="#FF3EA5"/><circle cx="42" cy="18" r="5" fill="#FF3EA5"/><circle cx="30" cy="30" r="5" fill="#FF3EA5"/><circle cx="18" cy="42" r="5" fill="#FF3EA5"/><circle cx="42" cy="42" r="5" fill="#FF3EA5"/></svg>
+  <svg class="sticker s2" viewBox="0 0 60 70" aria-hidden="true"><path d="M22 10 L52 4 L52 46" fill="none" stroke="#24133F" stroke-width="5" stroke-linejoin="round"/><path d="M22 10 L22 54" stroke="#24133F" stroke-width="5"/><ellipse cx="14" cy="56" rx="11" ry="8" fill="#2D5BFF" stroke="#24133F" stroke-width="4"/><ellipse cx="44" cy="48" rx="11" ry="8" fill="#2D5BFF" stroke="#24133F" stroke-width="4"/></svg>
+  <svg class="sticker s3" viewBox="0 0 70 50" aria-hidden="true"><path d="M35 10 C25 2 10 4 4 8 L4 44 C12 40 26 40 35 46 C44 40 58 40 66 44 L66 8 C60 4 45 2 35 10 Z" fill="#18CFA0" stroke="#24133F" stroke-width="4" stroke-linejoin="round"/><path d="M35 10 L35 46" stroke="#24133F" stroke-width="4"/></svg>
+  <svg class="sticker s4" viewBox="0 0 70 60" aria-hidden="true"><path d="M6 8 H64 V40 H30 L16 54 L18 40 H6 Z" fill="#FFD23F" stroke="#24133F" stroke-width="4" stroke-linejoin="round"/><path d="M35 33 C24 25 22 18 28 15 C31 13 34 15 35 18 C36 15 39 13 42 15 C48 18 46 25 35 33 Z" fill="#FF3EA5" stroke="#24133F" stroke-width="3"/></svg>
+  <span class="spark" style="top:70px;left:8%"></span><span class="spark p" style="top:150px;left:46%"></span><span class="spark b" style="top:40px;left:38%"></span><span class="spark" style="bottom:90px;left:30%"></span><span class="spark p" style="top:110px;right:30%"></span><span class="spark b" style="bottom:60px;right:22%"></span>
+  <div class="wrap hero-grid">
+    <div>
+      <span class="kicker"><span class="live"></span>Éco-gestion · Terminale Bac pro AEPA</span>
+      <h1><span class="glitch" data-text="Mission">Mission</span><br><span class="grad">Génér'Actions</span></h1>
+      <p class="lead">Un centre de loisirs, une résidence autonomie, des mercredis intergénérationnels… et un car qui ne vient pas. Ta mission : comprendre <strong>l'environnement économique et juridique</strong> de ta future structure.</p>
+      <div class="chips">
+        <span class="chip hl">Professeure : Mme Isabelle Léger</span>
+        <span class="chip">Module 1 · Environnement de l'entreprise</span>
+        <span class="chip">Nancy (54)</span>
+      </div>
+    </div>
+    <form class="agent" id="agentForm">
+      <h3>Ton pseudo d'animateur·rice</h3>
+      <label for="agentName" class="src">Prénom ou pseudo (il apparaîtra sur ton Pass)</label>
+      <input type="text" id="agentName" maxlength="24" autocomplete="off" placeholder="Ex. Inès">
+      <button type="submit" class="btn big">Lancer la mission ✦</button>
+      <p class="hello" id="agentHello" aria-live="polite"></p>
+    </form>
+  </div>
+</div>
+
+<!-- ================= BANDEAUX ================= -->
+<div class="marquee" aria-hidden="true"><div class="track-m">
+  <span>Jeux de société</span><span class="st">✦</span><span>Lecture partagée</span><span class="st">✦</span><span>Atelier musique</span><span class="st">✦</span><span>MJC Desforges</span><span class="st">✦</span><span>Résidence Chevardé</span><span class="st">✦</span><span>CCAS de Nancy</span><span class="st">✦</span><span>Intergénération</span><span class="st">✦</span>
+  <span>Jeux de société</span><span class="st">✦</span><span>Lecture partagée</span><span class="st">✦</span><span>Atelier musique</span><span class="st">✦</span><span>MJC Desforges</span><span class="st">✦</span><span>Résidence Chevardé</span><span class="st">✦</span><span>CCAS de Nancy</span><span class="st">✦</span><span>Intergénération</span><span class="st">✦</span>
+</div></div>
+<div class="marquee m2" aria-hidden="true"><div class="track-m">
+  <span>Mercredis Génér'Actions</span><span class="st">♥</span><span>6-10 ans × + de 65 ans</span><span class="st">♥</span><span>Nancy 54</span><span class="st">♥</span><span>Éducation populaire</span><span class="st">♥</span><span>Économie sociale et solidaire</span><span class="st">♥</span>
+  <span>Mercredis Génér'Actions</span><span class="st">♥</span><span>6-10 ans × + de 65 ans</span><span class="st">♥</span><span>Nancy 54</span><span class="st">♥</span><span>Éducation populaire</span><span class="st">♥</span><span>Économie sociale et solidaire</span><span class="st">♥</span>
+</div></div>
+
+<!-- ================= PLATEAU ================= -->
+<div class="board">
+  <div class="wrap">
+    <h2>Ton parcours d'animateur·rice</h2>
+    <div class="track" id="track">
+      <div class="token" id="token" aria-hidden="true"><span class="you">TOI</span></div>
+      <a class="station done" href="#accueil"><span class="dot">🏁</span>Départ</a>
+      <a class="station" href="#briefing" data-st="ech"><span class="dot">⚡</span>Échauffement</a>
+      <a class="station" href="#mission-1" data-st="m1"><span class="dot">🔎</span>Mission 1</a>
+      <a class="station" href="#mission-2" data-st="m2"><span class="dot">🔄</span>Mission 2</a>
+      <a class="station" href="#mission-3" data-st="m3"><span class="dot">⚖️</span>Mission 3</a>
+      <a class="station" href="#bilan" data-st="bilan"><span class="dot">🏆</span>Bilan</a>
+    </div>
+  </div>
+</div>
+
+<!-- ================= BRIEFING ================= -->
+<section id="briefing">
+  <div class="wrap stack">
+    <div class="sec-head">
+      <div class="sec-num">00</div>
+      <div>
+        <h2>Briefing : ta mission commence</h2>
+        <p>Lis le message de la coordinatrice et le mode d'emploi, puis fais l'échauffement. Chaque bonne réponse rapporte 10 XP.</p>
+      </div>
+    </div>
+
+    <article class="mail">
+      <div class="mail-head">
+        <span><b>De :</b> Camille Moreau, coordinatrice du projet Génér'Actions <span class="tag fake">personnage fictif</span></span>
+        <span><b>À :</b> l'équipe des stagiaires de la classe Bac pro AEPA</span>
+        <span><b>Objet :</b> Bienvenue dans l'équipe ! Votre première mission</span>
+      </div>
+      <div class="mail-body">
+        <div class="row" style="align-items:flex-start">
+          <div class="avatar" aria-hidden="true">CM</div>
+          <div class="stack" style="flex:1;min-width:240px;gap:10px">
+            <p>Bonjour à toutes et à tous,</p>
+            <p>Vous démarrez votre période en entreprise au <strong>centre de loisirs de la MJC Philippe Desforges</strong>, 27 rue de la République à Nancy. Cette année, nous lançons un projet intergénérationnel : <strong>« Les mercredis Génér'Actions »</strong>. Six mercredis après-midi, un groupe de 14 enfants de 6 à 10 ans rejoint les résidents de la <strong>résidence autonomie Robert-Chevardé</strong> (CCAS de Nancy) pour des jeux de société, de la lecture et un atelier musique.</p>
+            <p>Avant de passer aux animations, je veux que vous compreniez l'environnement de notre structure. Un bon animateur sait aussi <em>qui finance, qui décide, qui signe</em>. Trois questions vous attendent :</p>
+          </div>
+        </div>
+        <div class="goals">
+          <div class="goal"><b>1. Le secteur</b><p>Quelles organisations rencontre-t-on dans l'animation et quelles sont leurs finalités ?</p></div>
+          <div class="goal"><b>2. Les échanges</b><p>Avec quels agents économiques la MJC échange-t-elle ? Quoi, contre quoi ?</p></div>
+          <div class="goal"><b>3. Les contrats</b><p>Le car n'est pas venu le premier mercredi. Quels sont nos droits ?</p></div>
+        </div>
+        <p>Tous les documents pour répondre sont dans les ressources. Bon courage, et amusez-vous !</p>
+        <p><strong>Camille Moreau</strong>, coordinatrice du projet Génér'Actions</p>
+      </div>
+    </article>
+
+    <div class="card">
+      <h3>Mode d'emploi</h3>
+      <div class="howto" style="margin-top:8px">
+        <div><b>1. Complète les annexes</b><p>Les <b>annexes 1 à 14</b> <span class="tag fill">✏️ à compléter</span> sont les zones où tu réponds.</p></div>
+        <div><b>2. Consulte les ressources</b><p>Les <b>ressources 1 à 11</b> sont les documents qui t'aident. Clique sur <span class="ann-chip" style="cursor:default">Ressource 1 ↗</span> : elle s'ouvre à droite, la question reste visible.</p></div>
+        <div><b>3. Valide</b><p>Ta réponse est enregistrée (+10 XP), sans te dire si elle est juste. Tu peux la modifier tant que tu n'as pas terminé.</p></div>
+        <div><b>4. Monte en rang</b><p>Chaque réponse fait monter ton rang (Stagiaire → Légende). Chaque étape terminée débloque un succès.</p></div>
+        <div><b>5. Termine</b><p>À la fin, clique sur « Terminer » : tu découvres ton score. <b>50 bonnes réponses sur 55 = Pass Génér'Actions.</b></p></div>
+      </div>
+      <p class="note" style="margin-top:12px"><strong>Réel ou fictif ?</strong> La MJC Philippe Desforges, la résidence Robert-Chevardé et le CCAS de Nancy existent vraiment (étiquette <span class="tag real">réel</span>). Le projet Génér'Actions, la coordinatrice Camille Moreau, le transporteur Lorr'Autocars, le contrat et l'incident du car sont inventés pour le cours (étiquette <span class="tag fake">fictif</span>).</p>
+    </div>
+
+    <div class="activity" data-annexe="1" data-group="ech">
+      <div class="act-head"><span class="tag fill">✏️ à compléter</span><h3>Annexe 1 · Échauffement : Vrai ou Faux express</h3><span class="xp-pill">5 × 10 XP</span></div>
+      <p class="consigne">Réponds en t'aidant des ressources indiquées.</p>
+      <div class="stack" id="tf-ech"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STRUCTURES ================= -->
+<section id="entreprise" class="alt">
+  <div class="wrap stack">
+    <div class="sec-head">
+      <div class="sec-num">★</div>
+      <div>
+        <h2>Présentation des structures</h2>
+        <p>Deux structures réelles de Nancy réunies par notre projet. Leurs fiches complètes sont dans les ressources 1 et 2.</p>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="row" style="justify-content:space-between"><h3>MJC Philippe Desforges</h3><span class="tag real">réel</span></div>
+        <p>Association d'éducation populaire créée en 1945, au 27 rue de la République à Nancy. Elle accueille les enfants dans son centre de loisirs, propose une bibliothèque jeunesse et des ateliers artistiques. Elle est conventionnée avec la Ville de Nancy.</p>
+        <div class="ann-row" style="margin-top:10px">Fiche complète : <button type="button" class="ann-chip" data-ann="1">Ressource 1 ↗</button></div>
+      </div>
+      <div class="card">
+        <div class="row" style="justify-content:space-between"><h3>Résidence autonomie Robert-Chevardé</h3><span class="tag real">réel</span></div>
+        <p>Une des cinq résidences autonomie gérées par le CCAS de Nancy, au 38 rue de Dieuze. Elle loge des retraités de plus de 65 ans et organise déjà des activités intergénérationnelles, comme un atelier musical présenté dans le rapport d'activités 2024 du CCAS.</p>
+        <div class="ann-row" style="margin-top:10px">Fiche complète : <button type="button" class="ann-chip" data-ann="2">Ressource 2 ↗</button></div>
+      </div>
+    </div>
+    <p class="consigne">Tes pronostics ? Clique sur une carte pour révéler la réponse.</p>
+    <div class="grid4">
+      <button type="button" class="flip"><div class="flip-in"><div class="flip-face flip-front"><small>Pronostic</small><b>En quelle année la MJC Desforges a-t-elle été créée ?</b></div><div class="flip-face flip-back"><div class="big">1945</div><p>Elle s'appelait d'abord « MJC Nancy-Centre ».</p></div></div></button>
+      <button type="button" class="flip"><div class="flip-in"><div class="flip-face flip-front"><small>Pronostic</small><b>Combien de résidents dans les 5 résidences autonomie du CCAS de Nancy ?</b></div><div class="flip-face flip-back"><div class="big">223</div><p>En 2024, dont 5 étudiants.</p></div></div></button>
+      <button type="button" class="flip"><div class="flip-in"><div class="flip-face flip-front"><small>Pronostic</small><b>Combien de salariés dans l'économie sociale et solidaire en France ?</b></div><div class="flip-face flip-back"><div class="big">2,7 M</div><p>En 2025.</p></div></div></button>
+      <button type="button" class="flip"><div class="flip-in"><div class="flip-face flip-front"><small>Pronostic</small><b>Combien de MJC en France ?</b></div><div class="flip-face flip-back"><div class="big">≈ 1 000</div><p>Pour environ 4 millions de personnes accueillies.</p></div></div></button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MISSION 1 ================= -->
+<section id="mission-1">
+  <div class="wrap stack">
+    <div class="sec-head">
+      <div class="sec-num">01</div>
+      <div>
+        <h2>Mission 1 · Détective du secteur</h2>
+        <p>Comment se caractérise un secteur d'activité ? Notions : secteur d'activité, organisations et finalités, bien / service, production marchande / non marchande, ESS.</p>
+      </div>
+    </div>
+
+    <div class="activity" data-annexe="2" data-group="m1">
+      <div class="act-head"><span class="tag fill">✏️ à compléter</span><h3>Annexe 2 · Le grand tri des organisations</h3><span class="xp-pill">6 × 10 XP</span></div>
+      <p class="consigne">Le projet Génér'Actions met en relation plusieurs organisations. Range chacune dans la bonne famille selon sa finalité.</p>
+      <div class="ann-row">Ressources : <button type="button" class="ann-chip" data-ann="1">Ressource 1 ↗</button><button type="button" class="ann-chip" data-ann="2">Ressource 2 ↗</button><button type="button" class="ann-chip" data-ann="6">Ressource 6 ↗</button></div>
+      <div id="sort-orga"></div>
+    </div>
+
+    <div class="activity" data-annexe="3" data-group="m1">
+      <div class="act-head"><span class="tag fill">✏️ à compléter</span><h3>Annexe 3 · Quiz du secteur</h3><span class="xp-pill">5 × 10 XP</span></div>
+      <div class="stack" id="qcm-m1"></div>
+    </div>
+
+    <div class="activity" data-annexe="4" data-group="m1">
+      <div class="act-head"><span class="tag fill">✏️ à compléter</span><h3>Annexe 4 · Défi calcul : combien gagne-t-on de l'heure ?</h3><span class="tag calc">calcul</span><span class="xp-pill">10 XP</span></div>
+      <p class="prose">La MJC Desforges a publié une vraie offre d'emploi en 2026 pour un poste d'<strong>adjoint(e) de direction du centre de loisirs</strong>. Retrouve le salaire mensuel et la durée de travail dans la ressource 3, puis calcule le <strong>salaire horaire brut</strong>, arrondi au centime.</p>
+      <div class="ann-row">Ressource : <button type="button" class="ann-chip" data-ann="3">Ressource 3 ↗</button></div>
+      <div class="row">
+        <label for="inHoraire" style="font-weight:800">Salaire horaire brut :</label>
+        <input type="number" id="inHoraire" step="0.01" inputmode="decimal" placeholder="ex. 12,50">
+        <span style="font-weight:800">€</span>
+        <button class="btn primary" type="button" id="btnHoraire">Enregistrer</button>
+      </div>
+      <p class="fb" id="fbHoraire" aria-live="polite"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MISSION 2 ================= -->
+<section id="mission-2" class="alt">
+  <div class="wrap stack">
+    <div class="sec-head">
+      <div class="sec-num">02</div>
+      <div>
+        <h2>Mission 2 · La toile des échanges</h2>
+        <p>Comment une organisation interagit-elle avec son environnement ? Notions : agents économiques, échanges, marché.</p>
+      </div>
+    </div>
+
+    <div class="activity" data-annexe="5" data-group="m2">
+      <div class="act-head"><span class="tag fill">✏️ à compléter</span><h3>Annexe 5 · Relie la MJC à ses partenaires</h3><span class="xp-pill">8 × 10 XP</span></div>
+      <p class="consigne">Pour chaque échange, choisis l'agent économique concerné et la nature du flux. Le schéma s'allume au fur et à mesure de tes réponses.</p>
+      <div class="ann-row">Ressources : <button type="button" class="ann-chip" data-ann="7">Ressource 7 ↗</button><button type="button" class="ann-chip" data-ann="1">Ressource 1 ↗</button></div>
+      <svg class="diagram" viewBox="0 0 680 360" role="img" aria-label="Schéma des échanges entre la MJC et les agents économiques">
+        <line class="link" id="ln-menages" x1="340" y1="180" x2="120" y2="70"/>
+        <line class="link" id="ln-entreprises" x1="340" y1="180" x2="560" y2="70"/>
+        <line class="link" id="ln-apu" x1="340" y1="180" x2="120" y2="290"/>
+        <line class="link" id="ln-if" x1="340" y1="180" x2="560" y2="290"/>
+        <g class="node center"><rect x="245" y="140" width="190" height="80" rx="18" fill="#FFC933"/><text x="340" y="175" text-anchor="middle" font-size="19">MJC Desforges</text><text x="340" y="200" text-anchor="middle" font-size="13" font-weight="600">association</text></g>
+        <g class="node"><rect x="20" y="30" width="200" height="80" rx="18" fill="#FFFFFF"/><text x="120" y="64" text-anchor="middle" font-size="17">Ménages</text><text x="120" y="90" text-anchor="middle" font-size="14" id="cnt-menages">? flux</text></g>
+        <g class="node"><rect x="460" y="30" width="200" height="80" rx="18" fill="#FFFFFF"/><text x="560" y="64" text-anchor="middle" font-size="17">Entreprises</text><text x="560" y="90" text-anchor="middle" font-size="14" id="cnt-entreprises">? flux</text></g>
+        <g class="node"><rect x="10" y="250" width="220" height="80" rx="18" fill="#FFFFFF"/><text x="120" y="284" text-anchor="middle" font-size="16">Administrations publiques</text><text x="120" y="310" text-anchor="middle" font-size="14" id="cnt-apu">? flux</text></g>
+        <g class="node"><rect x="450" y="250" width="220" height="80" rx="18" fill="#FFFFFF"/><text x="560" y="284" text-anchor="middle" font-size="16">Institutions financières</text><text x="560" y="310" text-anchor="middle" font-size="14" id="cnt-if">? flux</text></g>
+      </svg>
+      <div class="stack" id="flows"></div>
+    </div>
+
+    <div class="activity" data-annexe="6" data-group="m2">
+      <div class="act-head"><span class="tag fill">✏️ à compléter</span><h3>Annexe 6 · Sur quel marché ?</h3><span class="xp-pill">2 × 10 XP</span></div>
+      <div class="stack" id="qcm-marche"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MISSION 3 ================= -->
+<section id="mission-3">
+  <div class="wrap stack">
+    <div class="sec-head">
+      <div class="sec-num">03</div>
+      <div>
+        <h2>Mission 3 · Le car fantôme</h2>
+        <p>Comment les relations entre les agents économiques sont-elles formalisées ? Notions : contrat, liberté contractuelle, force obligatoire, obligations de moyens et de résultat, responsabilité contractuelle, dommages-intérêts.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between"><h3>L'incident du mercredi 4 novembre 2026</h3><span class="tag fake">fictif</span></div>
+      <div class="phone-scene" style="margin-top:10px">
+        <p class="prose" style="flex:1;min-width:240px">13 h 45, devant la MJC. Quatorze enfants en gilet jaune, trois animateurs, des boîtes de jeux sous le bras… et pas de car. À 13 h 52, un SMS arrive. Camille Moreau, la coordinatrice, trouve un autre transporteur en urgence, mais le groupe arrive très en retard à la résidence. Que dit le contrat ? Que peut faire la MJC ?</p>
+        <div class="lock"><p class="time">13:52</p><p class="date">mercredi 4 novembre</p><div class="sms"><small>Lorr'Autocars · maintenant</small>Bonjour, notre chauffeur est absent aujourd'hui, nous ne pourrons pas assurer votre transport. Désolés pour la gêne. L'équipe Lorr'Autocars</div></div>
+      </div>
+      <div class="ann-row" style="margin-top:12px">Le dossier : <button type="button" class="ann-chip" data-ann="8">Ressource 8 · Contrat ↗</button><button type="button" class="ann-chip" data-ann="9">Ressource 9 · Rapport d'incident ↗</button><button type="button" class="ann-chip" data-ann="10">Ressource 10 · Code civil ↗</button><button type="button" class="ann-chip" data-ann="11">Ressource 11 · Fiche notions ↗</button></div>
+    </div>
+
+    <div class="activity" data-annexe="7" data-group="m3">
+      <div class="act-head"><span class="tag fill">✏️ à compléter</span><h3>Annexe 7 · Décortiquer le contrat</h3><span class="xp-pill">4 × 10 XP</span></div>
+      <div class="stack" id="qcm-contrat"></div>
+    </div>
+
+    <div class="activity" data-annexe="8" data-group="m3">
+      <div class="act-head"><span class="tag fill">✏️ à compléter</span><h3>Annexe 8 · Moyens ou résultat ?</h3><span class="xp-pill">6 × 10 XP</span></div>
+      <p class="consigne">Range chaque engagement dans le bon bac.</p>
+      <div class="ann-row">Ressources : <button type="button" class="ann-chip" data-ann="11">Ressource 11 ↗</button><button type="button" class="ann-chip" data-ann="8">Ressource 8 ↗</button></div>
+      <div id="sort-oblig"></div>
+    </div>
+
+    <div class="activity" data-annexe="9" data-group="m3">
+      <div class="act-head"><span class="tag fill">✏️ à compléter</span><h3>Annexe 9 · La responsabilité contractuelle de Lorr'Autocars</h3><span class="xp-pill">3 × 10 XP</span></div>
+      <p class="consigne">Pour engager la responsabilité contractuelle du transporteur, la MJC doit prouver trois conditions. Associe chaque condition au bon élément du dossier.</p>
+      <div class="ann-row">Ressources : <button type="button" class="ann-chip" data-ann="11">Ressource 11 ↗</button><button type="button" class="ann-chip" data-ann="9">Ressource 9 ↗</button></div>
+      <div class="stack" id="sel-conditions"></div>
+    </div>
+
+    <div class="activity" data-annexe="10" data-group="m3">
+      <div class="act-head"><span class="tag fill">✏️ à compléter</span><h3>Annexe 10 · Quelles solutions pour la MJC ?</h3><span class="xp-pill">10 XP</span></div>
+      <p class="consigne">Coche toutes les solutions que la MJC peut légalement envisager, puis enregistre tes choix.</p>
+      <div class="ann-row">Ressources : <button type="button" class="ann-chip" data-ann="8">Ressource 8 (article 6) ↗</button><button type="button" class="ann-chip" data-ann="10">Ressource 10 ↗</button><button type="button" class="ann-chip" data-ann="11">Ressource 11 ↗</button></div>
+      <div id="multi-sanctions"></div>
+    </div>
+
+    <div class="activity" data-annexe="11" data-group="m3">
+      <div class="act-head"><span class="tag fill">✏️ à compléter</span><h3>Annexe 11 · Calcul du préjudice financier</h3><span class="tag calc">calcul</span><span class="xp-pill">10 XP</span></div>
+      <p class="consigne">De combien d'euros la MJC a-t-elle dépensé en plus, par rapport à ce que prévoyait le contrat pour ce mercredi-là ? Attention à l'article 6 du contrat.</p>
+      <div class="ann-row">Ressources : <button type="button" class="ann-chip" data-ann="8">Ressource 8 ↗</button><button type="button" class="ann-chip" data-ann="9">Ressource 9 ↗</button></div>
+      <div class="row">
+        <label for="inPrejudice" style="font-weight:800">Surcoût :</label>
+        <input type="number" id="inPrejudice" step="1" inputmode="numeric" placeholder="montant">
+        <span style="font-weight:800">€</span>
+        <button class="btn primary" type="button" id="btnPrejudice">Enregistrer</button>
+      </div>
+      <p class="fb" id="fbPrejudice" aria-live="polite"></p>
+    </div>
+
+    <div class="activity" data-annexe="12" data-group="m3">
+      <div class="act-head"><span class="tag fill">✏️ à compléter</span><h3>Annexe 12 · Défi expert : « C'est un cas de force majeure ! »</h3><span class="xp-pill">10 XP</span></div>
+      <p class="prose">Au téléphone, le gérant de Lorr'Autocars affirme : « L'absence du chauffeur, c'est de la force majeure, nous ne vous devons rien. »</p>
+      <div class="stack" id="qcm-fm"></div>
+    </div>
+
+    <div class="activity" data-annexe="13" data-group="m3">
+      <div class="act-head"><span class="tag fill">✏️ à compléter</span><h3>Annexe 13 · Rédige la réclamation</h3><span class="xp-pill">10 XP</span></div>
+      <p class="consigne">Construis le courrier de la MJC. Le texte se met à jour en direct. Enregistre-la quand elle te convient.</p>
+      <div class="ann-row">Ressources : <button type="button" class="ann-chip" data-ann="11">Ressource 11 (mise en demeure) ↗</button><button type="button" class="ann-chip" data-ann="8">Ressource 8 ↗</button></div>
+      <div class="grid2">
+        <div class="stack" style="gap:12px">
+          <label for="lt-type" style="font-weight:800">Type de courrier</label>
+          <select id="lt-type">
+            <option value="">— choisir —</option>
+            <option value="md">Mise en demeure (lettre recommandée avec accusé de réception)</option>
+            <option value="mail">Simple courriel pour signaler le problème</option>
+          </select>
+          <fieldset style="border:2px solid var(--ink);border-radius:12px;padding:10px 12px">
+            <legend style="font-weight:800;padding:0 6px">Demandes de la MJC</legend>
+            <label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="lt-d1"> Ne pas facturer le trajet du 4 novembre</label>
+            <label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="lt-d2"> Rembourser le surcoût calculé en annexe 11</label>
+            <label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="lt-d3"> Garantir les prochains mercredis ou prévenir 48 h avant avec une solution de remplacement</label>
+            <label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="lt-d4"> Verser 5 000 € de dommages-intérêts</label>
+          </fieldset>
+          <label for="lt-delai" style="font-weight:800">Délai de réponse accordé</label>
+          <select id="lt-delai"><option value="8">8 jours</option><option value="15" selected>15 jours</option></select>
+          <label for="lt-nom" style="font-weight:800">Ton prénom et nom (stagiaire)</label>
+          <input type="text" id="lt-nom" placeholder="Prénom NOM" style="width:100%">
+          <div class="row"><button class="btn primary" type="button" id="lt-check">Enregistrer ma lettre</button><button class="btn" type="button" id="lt-copy">Copier le texte</button></div>
+          <p class="fb" id="lt-fb" aria-live="polite"></p>
+        </div>
+        <div class="letter" id="lt-out" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= BILAN ================= -->
+<section id="bilan" class="alt">
+  <div class="wrap stack">
+    <div class="sec-head">
+      <div class="sec-num">04</div>
+      <div>
+        <h2>Bilan · Synthèse et résultat</h2>
+        <p>Choisis le bon mot dans chaque menu. Une fois complète, copie la synthèse dans ton cahier ou ton traitement de texte.</p>
+      </div>
+    </div>
+    <div class="activity" data-annexe="14" data-group="bilan">
+      <div class="act-head"><span class="tag fill">✏️ à compléter</span><h3>Annexe 14 · Ce que je retiens</h3><span class="xp-pill">11 × 10 XP</span></div>
+      <div class="cloze" id="cloze"></div>
+      <div class="row"><button class="btn" type="button" id="cloze-copy">Copier la synthèse</button><span class="fb" id="cloze-fb" aria-live="polite"></span></div>
+    </div>
+
+    <div class="card finish" id="finishCard">
+      <h3>Fin de mission</h3>
+      <p class="prose" style="margin-top:6px">Quand tu as répondu à toutes les annexes, clique sur « Terminer ». Tu découvriras ton <b>score de réussite</b>. <b>À partir de 50 bonnes réponses sur 55, tu décroches le Pass Génér'Actions.</b> Attention : après avoir terminé, tes réponses sont verrouillées.</p>
+      <p id="finishInfo" style="font-weight:800;margin-top:10px;color:var(--cyan)"></p>
+      <div class="row" style="margin-top:12px"><button class="btn big" type="button" id="finishBtn">Terminer la mission et voir mon score</button></div>
+      <div id="resultBox" hidden>
+        <div class="gauge"><div class="gauge-fill" id="gaugeFill"></div><span class="gauge-mark" style="left:90.9%" title="50 bonnes réponses"></span></div>
+        <p class="score-big grad" id="scoreBig">0 %</p>
+        <p class="score-sub" id="scoreSub"></p>
+        <p id="scoreMsg" style="font-weight:800;text-align:center;margin-top:8px"></p>
+      </div>
+    </div>
+
+    <div class="cert-locked" id="dipLocked">
+      <p class="lockic">🔒</p>
+      <p style="font-family:var(--display);font-weight:800;font-size:1.3rem">Pass Génér'Actions verrouillé</p>
+      <p style="margin-top:6px">Il se débloque à partir de <b>50 bonnes réponses sur 55</b>.</p>
+    </div>
+
+    <div class="cert-wrap" id="diploma" hidden>
+      <div class="cert">
+        <div class="cert-in">
+          <p class="foot">MJC PHILIPPE DESFORGES × RÉSIDENCE ROBERT-CHEVARDÉ · NANCY</p>
+          <p class="pass-title">PASS GÉNÉR'ACTIONS ✦</p>
+          <p class="who" id="dipName">Pseudo</p>
+          <p class="role" id="dipRole">Rang</p>
+          <div class="stats">
+            <div><b id="st-ech">–</b><span>ÉCH</span></div>
+            <div><b id="st-m1">–</b><span>SEC</span></div>
+            <div><b id="st-m2">–</b><span>FLX</span></div>
+            <div><b id="st-m3">–</b><span>JUR</span></div>
+            <div><b id="st-bilan">–</b><span>SYN</span></div>
+          </div>
+          <p class="foot" id="dipXP"></p>
+          <p class="foot" id="dipDate"></p>
+        </div>
+        <div class="stub">
+          <p class="ovr" id="dipScore">0<small>SCORE %</small></p>
+          <p class="adm">ADMIS·E ✓</p>
+        </div>
+      </div>
+    </div>
+    <div class="row" style="justify-content:center">
+      <button class="btn" type="button" id="resetAll">Recommencer le parcours</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RESSOURCES ================= -->
+<section id="ressources">
+  <div class="wrap stack">
+    <div class="sec-head">
+      <div class="sec-num">R</div>
+      <div>
+        <h2>Ressources du dossier</h2>
+        <p>Ces documents t'aident à compléter les annexes. Tu peux les ouvrir ici, ou avec les boutons jaunes à côté de chaque question.</p>
+      </div>
+    </div>
+<details class="annex" id="annexe-1" data-title="Ressource 1 · Fiche d'identité de la MJC">
+      <summary><span class="tag real">réel</span> Ressource 1 · Fiche d'identité de la MJC Philippe Desforges</summary>
+      <div class="annex-body">
+        <div class="tbl"><table>
+          <tr><th>Élément</th><th>Information</th></tr>
+          <tr><td>Dénomination</td><td>MJC Philippe Desforges (enseigne au répertoire SIRENE : MJC DESFORGES)</td></tr>
+          <tr><td>Statut</td><td>Association d'éducation populaire</td></tr>
+          <tr><td>Création</td><td>1945 (anciennement « MJC Nancy-Centre »)</td></tr>
+          <tr><td>Adresse</td><td>27 rue de la République, 54000 Nancy</td></tr>
+          <tr><td>SIRET</td><td>513 972 299 00012</td></tr>
+          <tr><td>Code APE</td><td>93.29Z · Autres activités récréatives et de loisirs</td></tr>
+          <tr><td>Partenaire public</td><td>Conventionnée avec la Ville de Nancy. La Ville indique soutenir financièrement les MJC nancéiennes, qu'elle qualifie de « piliers de l'éducation populaire ».</td></tr>
+          <tr><td>Réseau</td><td>Union locale des MJC de Nancy (avec les MJC Bazin, Beauregard, Haut-du-Lièvre, Lillebonne et Trois Maisons ; la MJC Pichon a fermé en juillet 2025)</td></tr>
+          <tr><td>Activités</td><td>Centre de loisirs pour enfants ; bibliothèque centrée sur la littérature jeunesse ; ateliers artistiques, avec une exposition annuelle des adhérents (« Cré'adhérents »)</td></tr>
+          <tr><td>Public</td><td>Familles et enfants (centre de loisirs), adhérents de tous âges (ateliers)</td></tr>
+        </table></div>
+      </div>
+    </details>
+
+    <details class="annex" id="annexe-2" data-title="Ressource 2 · Résidence Chevardé et CCAS de Nancy">
+      <summary><span class="tag real">réel</span> Ressource 2 · La résidence autonomie Robert-Chevardé et le CCAS de Nancy</summary>
+      <div class="annex-body">
+        <div class="tbl"><table>
+          <tr><th>Élément</th><th>Information</th></tr>
+          <tr><td>Gestionnaire</td><td>CCAS de Nancy (centre communal d'action sociale). Le CCAS est un établissement public rattaché à la commune : il agit pour l'intérêt général, dans le domaine de l'action sociale.</td></tr>
+          <tr><td>Adresse</td><td>38 rue de Dieuze, 54000 Nancy</td></tr>
+          <tr><td>Public accueilli</td><td>Retraités de plus de 65 ans, autonomes, qui louent un petit logement dans la résidence</td></tr>
+          <tr><td>Logements (2024)</td><td>51 T1bis et 3 T2, plus 2 T1 destinés à un jeune public</td></tr>
+          <tr><td>Réseau</td><td>5 résidences autonomie du CCAS : Boudonville, Chevardé, Donop, Mouilleron, Pichon. En 2024 : 223 résidents, dont 5 étudiants.</td></tr>
+          <tr><td>Animations</td><td>Programmes d'animation mensuels dans chaque résidence. En 2024, le CCAS présente un atelier musical intergénérationnel avec les résidents de Chevardé.</td></tr>
+          <tr><td>Liens entre générations</td><td>Le CCAS organise des rencontres entre les seniors des résidences et des crèches, écoles, centres de loisirs, MJC et lycées.</td></tr>
+        </table></div>
+        <p class="def"><b>Résidence autonomie ou Ehpad ?</b> Une résidence autonomie accueille des personnes âgées qui vivent de façon autonome. Un Ehpad est un établissement d'hébergement pour personnes âgées <em>dépendantes</em>.</p>
+      </div>
+    </details>
+
+    <details class="annex" id="annexe-3" data-title="Ressource 3 · Offre d'emploi de la MJC">
+      <summary><span class="tag real">réel</span> Ressource 3 · Offre d'emploi publiée par la MJC (2026, résumé)</summary>
+      <div class="annex-body">
+        <div class="doc">
+          <h4>La MJC Philippe Desforges recrute un(e) adjoint(e) de direction du centre de loisirs</h4>
+          <p><b>Prise de poste</b> : début juin 2026 · <b>Entretiens</b> : 26 mai 2026 à la MJC</p>
+          <p><b>Rattachement</b> : sous la responsabilité de la directrice de la MJC, en lien avec la direction du centre de loisirs.</p>
+          <p><b>Missions principales</b> : participer à l'accueil et à l'animation des enfants en sécurité ; garantir l'application des projets éducatif et pédagogique ; remplacer la direction du centre de loisirs en son absence ; mettre en œuvre et co-évaluer les activités ; suivre les inscriptions et pointages ; vérifier le matériel pédagogique ; accueillir les familles et aider le secrétariat aux inscriptions.</p>
+          <p><b>Rémunération</b> : 1 997,71 € brut mensuel, hors ancienneté.</p>
+          <p><b>Durée de travail</b> : base 32 heures par semaine.</p>
+        </div>
+        <p class="def"><b>Méthode · Du mois à l'heure.</b> Un salaire est versé chaque mois, mais la durée de travail est donnée par semaine. Une année compte 52 semaines et 12 mois.<br>① Heures par mois = heures par semaine × 52 ÷ 12.<br>② Salaire horaire = salaire mensuel ÷ heures par mois.</p>
+      </div>
+    </details>
+
+    <details class="annex" id="annexe-4" data-title="Ressource 4 · Le bac pro AEPA et ses employeurs">
+      <summary><span class="tag real">réel</span> Ressource 4 · Le bac pro AEPA, ses métiers et ses employeurs</summary>
+      <div class="annex-body">
+        <p><b>Objectifs du diplôme</b> : former des animateurs généralistes auprès des jeunes et des personnes âgées en perte d'autonomie ; concevoir des activités pour maintenir la vie relationnelle, sociale et culturelle de ces publics, en établissement ou à domicile.</p>
+        <p><b>Métiers visés</b> : animateur socioculturel, animateur périscolaire, animateur en gérontologie, animateur social.</p>
+        <div class="tbl"><table>
+          <tr><th>Employeurs possibles</th></tr>
+          <tr><td>Centres de loisirs et centres sociaux</td></tr>
+          <tr><td>MJC (maisons des jeunes et de la culture)</td></tr>
+          <tr><td>Associations</td></tr>
+          <tr><td>Ehpad (établissements d'hébergement pour personnes âgées dépendantes)</td></tr>
+          <tr><td>Services d'aide et de maintien à domicile</td></tr>
+        </table></div>
+        <p><b>Les MJC en France</b> : environ 1 000 MJC proposent des activités d'éducation populaire et culturelles à environ 4 millions de personnes.</p>
+      </div>
+    </details>
+
+    <details class="annex" id="annexe-5" data-title="Ressource 5 · Secteurs d'activité et production">
+      <summary><span class="tag notion">fiche notions</span> Ressource 5 · Secteurs d'activité, biens et services, production</summary>
+      <div class="annex-body">
+        <div class="tbl"><table>
+          <tr><th>Secteur</th><th>Activités</th><th>Exemples</th></tr>
+          <tr><td>Primaire</td><td>Exploitation des ressources naturelles</td><td>Agriculture, pêche, sylviculture</td></tr>
+          <tr><td>Secondaire</td><td>Transformation des matières premières</td><td>Industrie, construction</td></tr>
+          <tr><td>Tertiaire</td><td>Production de services</td><td>Commerce, transport, santé, action sociale, éducation, loisirs, animation</td></tr>
+        </table></div>
+        <p class="def"><b>Bien</b> : produit matériel, que l'on peut toucher et stocker (un jeu de société, un goûter).<br><b>Service</b> : prestation immatérielle, produite et consommée en même temps (un atelier d'animation, un trajet en car).</p>
+        <p class="def"><b>Production marchande</b> : vendue sur un marché à un prix qui couvre ses coûts.<br><b>Production non marchande</b> : fournie gratuitement ou à un prix économiquement non significatif (définition de l'Insee). Elle est souvent financée en partie par des subventions.</p>
+        <p class="def"><b>Code APE</b> (activité principale exercée) : code attribué par l'Insee à chaque entreprise ou association, qui indique son activité principale.</p>
+      </div>
+    </details>
+
+    <details class="annex" id="annexe-6" data-title="Ressource 6 · Organisations et ESS">
+      <summary><span class="tag notion">fiche notions</span> Ressource 6 · Les familles d'organisations et l'économie sociale et solidaire</summary>
+      <div class="annex-body">
+        <div class="tbl"><table>
+          <tr><th>Famille</th><th>Finalité</th><th>Exemples</th></tr>
+          <tr><td>Entreprise privée à but lucratif</td><td>Produire des biens ou des services pour réaliser un profit, partagé entre les propriétaires</td><td>Une société de transport (SARL, SAS…), un supermarché, un commerce</td></tr>
+          <tr><td>Organisation de l'économie sociale et solidaire (ESS)</td><td>Répondre à un besoin social ; la recherche de profit n'est pas le but ; fonctionnement démocratique (une personne = une voix)</td><td>Associations, mutuelles, coopératives, fondations</td></tr>
+          <tr><td>Organisation publique</td><td>Satisfaire l'intérêt général et assurer des missions de service public</td><td>Une commune (collectivité territoriale), un établissement public comme un CCAS</td></tr>
+        </table></div>
+        <p class="law"><b>Chiffres clés</b> : l'ESS a été reconnue par la loi du 31 juillet 2014. En 2025, elle compte 2,7 millions de salariés et 152 000 entreprises employeuses. Elle représente 13,7 % des emplois salariés du secteur privé, soit environ 1 emploi privé sur 7.</p>
+      </div>
+    </details>
+
+    <details class="annex" id="annexe-7" data-title="Ressource 7 · Agents économiques et marchés">
+      <summary><span class="tag notion">fiche notions</span> Ressource 7 · Les agents économiques, les flux et les marchés</summary>
+      <div class="annex-body">
+        <div class="tbl"><table>
+          <tr><th>Agent économique</th><th>Rôle principal</th><th>Exemples autour de la MJC</th></tr>
+          <tr><td>Ménages</td><td>Consommer ; fournir leur travail contre un salaire ; épargner</td><td>Les familles qui inscrivent leurs enfants ; les salariés de la MJC</td></tr>
+          <tr><td>Entreprises</td><td>Produire et vendre des biens et services</td><td>Une société de transport, un fournisseur de matériel, un supermarché</td></tr>
+          <tr><td>Administrations publiques</td><td>Fournir des services non marchands ; redistribuer (subventions, aides)</td><td>La Ville de Nancy, le CCAS de Nancy</td></tr>
+          <tr><td>Institutions financières</td><td>Gérer l'argent, les comptes, les moyens de paiement ; prêter</td><td>La banque de la MJC</td></tr>
+          <tr><td>Institutions sans but lucratif au service des ménages</td><td>Fournir des services aux ménages sans but lucratif</td><td>Les associations, comme la MJC elle-même</td></tr>
+        </table></div>
+        <p class="def"><b>Flux réel</b> : un bien, un service ou du travail qui passe d'un agent à un autre.<br><b>Flux monétaire</b> : de l'argent (prix, cotisation, salaire, subvention, frais…). Souvent, à un flux réel correspond un flux monétaire en sens inverse.</p>
+        <p class="def"><b>Marché</b> : lieu, réel ou virtuel, où se rencontrent une offre et une demande, et où se forme un prix.</p>
+        <div class="tbl"><table>
+          <tr><th>Marché</th><th>Ce qui s'échange</th><th>Offre / demande</th></tr>
+          <tr><td>Marché des biens et services</td><td>Produits et prestations</td><td>Les producteurs offrent, les clients demandent</td></tr>
+          <tr><td>Marché du travail</td><td>Le travail, contre un salaire</td><td>Les personnes qui cherchent un emploi offrent leur travail ; les employeurs qui recrutent le demandent</td></tr>
+          <tr><td>Marché financier</td><td>Les capitaux (actions, obligations)</td><td>Épargnants et organisations qui ont besoin de financement</td></tr>
+        </table></div>
+      </div>
+    </details>
+
+    <details class="annex" id="annexe-8" data-title="Ressource 8 · Contrat de transport">
+      <summary><span class="tag fake">fictif</span> Ressource 8 · Contrat de prestation de transport n° 2026-047</summary>
+      <div class="annex-body">
+        <div class="doc">
+          <span class="stamp">FICTIF</span>
+          <h4>Contrat de prestation de transport de voyageurs</h4>
+          <p><b>Entre</b> : la MJC Philippe Desforges, association, 27 rue de la République, 54000 Nancy, ci-après « le client » ;</p>
+          <p><b>Et</b> : Lorr'Autocars SARL (entreprise inventée pour le cours), ci-après « le transporteur ».</p>
+          <div class="art"><b>Article 1 · Objet.</b> Le transporteur assure le transport aller-retour d'un groupe de 14 enfants (6-10 ans) et de 3 animateurs, de la MJC à la résidence autonomie Robert-Chevardé, 38 rue de Dieuze à Nancy.</div>
+          <div class="art"><b>Article 2 · Dates et horaires.</b> Les mercredis 4, 18 et 25 novembre, 2, 9 et 16 décembre 2026 (le 11 novembre, férié, est exclu). Départ de la MJC à 13 h 45, arrivée à la résidence à 14 h 00. Retour : départ de la résidence à 16 h 30.</div>
+          <div class="art"><b>Article 3 · Prix.</b> 165 € TTC par mercredi (aller-retour), soit 990 € TTC pour les 6 mercredis. Paiement à réception de facture, en fin de mois.</div>
+          <div class="art"><b>Article 4 · Obligations du transporteur.</b> Mettre à disposition un véhicule adapté et un conducteur ; déposer le groupe à l'heure prévue à l'article 2 ; en cas d'impossibilité, prévenir le client au moins 48 heures à l'avance et proposer un véhicule de remplacement.</div>
+          <div class="art"><b>Article 5 · Obligations du client.</b> Payer le prix ; présenter le groupe prêt à l'heure ; assurer l'encadrement des enfants pendant le trajet.</div>
+          <div class="art"><b>Article 6 · Inexécution.</b> Un trajet non réalisé du fait du transporteur n'est pas facturé. Le client peut en outre demander réparation du préjudice subi.</div>
+          <p>Fait à Nancy, le 12 octobre 2026, en deux exemplaires. Signatures des deux parties.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="annex" id="annexe-9" data-title="Ressource 9 · Rapport d'incident">
+      <summary><span class="tag fake">fictif</span> Ressource 9 · Rapport d'incident du 4 novembre 2026</summary>
+      <div class="annex-body">
+        <div class="doc">
+          <span class="stamp">FICTIF</span>
+          <h4>Rapport d'incident · Projet Génér'Actions</h4>
+          <div class="tbl"><table>
+            <tr><th>Heure</th><th>Événement</th></tr>
+            <tr><td class="num-c">13 h 45</td><td>Le groupe (14 enfants, 3 animateurs) est prêt devant la MJC. Le car de Lorr'Autocars n'est pas là.</td></tr>
+            <tr><td class="num-c">13 h 52</td><td>SMS de Lorr'Autocars : chauffeur absent, transport annulé. Aucun appel les jours précédents.</td></tr>
+            <tr><td class="num-c">13 h 55</td><td>La coordinatrice prévient la résidence du retard, puis cherche un autre transporteur.</td></tr>
+            <tr><td class="num-c">14 h 25</td><td>Arrivée d'un car de remplacement (autre société). Prix accepté : 240 € TTC l'aller-retour.</td></tr>
+            <tr><td class="num-c">14 h 50</td><td>Arrivée à la résidence avec 50 minutes de retard. L'atelier musique est annulé, seuls les jeux de société sont maintenus.</td></tr>
+            <tr><td class="num-c">16 h 30</td><td>Retour assuré par le transporteur de remplacement.</td></tr>
+          </table></div>
+          <p><b>Conséquences</b> : dépense imprévue de 240 € payée au transporteur de remplacement ; atelier musique annulé ; résidents installés depuis 14 h ; déception des enfants.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="annex" id="annexe-10" data-title="Ressource 10 · Extraits du Code civil">
+      <summary><span class="tag real">réel</span> Ressource 10 · Extraits du Code civil</summary>
+      <div class="annex-body">
+        <p class="law"><b>Article 1101</b> · Le contrat est un accord de volontés entre deux ou plusieurs personnes destiné à créer, modifier, transmettre ou éteindre des obligations.</p>
+        <p class="law"><b>Article 1102, alinéa 1</b> · Chacun est libre de contracter ou de ne pas contracter, de choisir son cocontractant et de déterminer le contenu et la forme du contrat dans les limites fixées par la loi.</p>
+        <p class="law"><b>Article 1103</b> · Les contrats légalement formés tiennent lieu de loi à ceux qui les ont faits.</p>
+        <p class="law"><b>Article 1217</b> · La partie envers laquelle l'engagement n'a pas été exécuté, ou l'a été imparfaitement, peut : refuser d'exécuter ou suspendre l'exécution de sa propre obligation ; poursuivre l'exécution forcée en nature de l'obligation ; obtenir une réduction du prix ; provoquer la résolution du contrat ; demander réparation des conséquences de l'inexécution. Les sanctions qui ne sont pas incompatibles peuvent être cumulées ; des dommages et intérêts peuvent toujours s'y ajouter.</p>
+        <p class="law"><b>Article 1218, alinéa 1</b> · Il y a force majeure en matière contractuelle lorsqu'un événement échappant au contrôle du débiteur, qui ne pouvait être raisonnablement prévu lors de la conclusion du contrat et dont les effets ne peuvent être évités par des mesures appropriées, empêche l'exécution de son obligation par le débiteur.</p>
+        <p class="law"><b>Article 1224</b> · La résolution résulte soit de l'application d'une clause résolutoire soit, en cas d'inexécution suffisamment grave, d'une notification du créancier au débiteur ou d'une décision de justice.</p>
+        <p class="law"><b>Article 1231</b> · À moins que l'inexécution soit définitive, les dommages et intérêts ne sont dus que si le débiteur a préalablement été mis en demeure de s'exécuter dans un délai raisonnable.</p>
+        <p class="law"><b>Article 1231-1 (résumé)</b> · Le débiteur est condamné à payer des dommages et intérêts en raison de l'inexécution ou du retard dans l'exécution, sauf s'il prouve que l'exécution a été empêchée par la force majeure.</p>
+      </div>
+    </details>
+
+    <details class="annex" id="annexe-11" data-title="Ressource 11 · Fiche notions : contrat et responsabilité">
+      <summary><span class="tag notion">fiche notions</span> Ressource 11 · Obligations, responsabilité contractuelle et réclamation</summary>
+      <div class="annex-body">
+        <p class="def"><b>Obligation de résultat</b> : le débiteur promet un résultat précis et vérifiable (livrer à une date, payer un prix, arriver à une heure). Si le résultat n'est pas atteint, il est en faute.<br><b>Obligation de moyens</b> : le débiteur promet de faire tout son possible, sans garantir le résultat, car celui-ci ne dépend pas que de lui. Exemple classique : un médecin s'engage à soigner, pas à guérir.</p>
+        <div class="def"><b>La responsabilité contractuelle : 3 conditions à prouver</b>
+          <ol style="margin:6px 0 0;padding-left:20px">
+            <li><b>Une inexécution</b> : une obligation du contrat n'a pas été respectée (pas faite, mal faite ou en retard).</li>
+            <li><b>Un dommage</b> (ou préjudice) : une perte subie par la victime, financière ou non.</li>
+            <li><b>Un lien de causalité</b> : le dommage est la conséquence directe de l'inexécution.</li>
+          </ol>
+          Si les 3 conditions sont réunies, la victime peut obtenir des <b>dommages-intérêts</b> : une somme d'argent qui répare le préjudice réellement subi et prouvé, ni plus ni moins.
+        </div>
+        <p class="def"><b>Les solutions du créancier</b> (article 1217) : ne pas exécuter sa propre obligation (par exemple ne pas payer une prestation non réalisée) ; exiger l'exécution ; obtenir une baisse du prix ; mettre fin au contrat (résolution), si l'inexécution est suffisamment grave ; demander des dommages-intérêts.</p>
+        <p class="def"><b>Litige civil ou infraction pénale ?</b> Un contrat mal exécuté est un litige <em>civil</em> entre deux parties : il se règle à l'amiable ou devant le juge civil, pas par une plainte au commissariat. Et personne n'a le droit de se faire justice soi-même (par exemple en confisquant un bien de l'autre partie).</p>
+        <p class="def"><b>La force majeure</b> libère le débiteur seulement si l'événement réunit 3 critères : il échappe à son contrôle ; il était imprévisible au moment de signer ; ses effets ne pouvaient pas être évités. En cas de désaccord, c'est le juge qui décide.</p>
+        <p class="def"><b>La mise en demeure</b> : lettre par laquelle le créancier demande officiellement au débiteur d'exécuter ses obligations dans un délai précis. On l'envoie en <b>recommandé avec accusé de réception</b> pour prouver la date et le contenu. Avant de réclamer des dommages-intérêts, elle est en principe obligatoire (article 1231).</p>
+      </div>
+    </details>
+  
+  </div>
+</section>
+
+<footer><div class="wrap"><p>Cours conçu par Mme Isabelle Léger, économie-gestion, Bac pro AEPA. Les éléments marqués « fictif » sont des supports pédagogiques et ne décrivent pas des faits réels.</p></div></footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+const DATA = {"salt":"fe29ebe10612bbecb9560614","ans":{"a1-1":["777ff6ea6c349ad50aa5f0c3453c4c0ab6b6f809fb0dfaafa2593a2e416916e0"],"a1-2":["e7b8d36197c72d347d8c7e3491994ba73201e33bf1f847c9f792bd4fee20dc37"],"a1-3":["f21d1ead0025366bd9ec80177faada98bf7e141f46b2a2a6e839de3ac30ecdec"],"a1-4":["84956f64c8916bcae2e494a13c56c01b76dddd78a7f7d4368a8e4e5eaac80f5e"],"a1-5":["7eb18b7ff21b341fa80be1f15dc4f89c54415506c5d9d76e5c4909aa63cc6ca3"],"a2-mjc":["54d1deb3b5d95f5daf327d4a6cb580ebf31c31397990eacd8f7eb3bfce2dd350"],"a2-ccas":["9fa7c0a357e40ff9236514a6ceb8532ee065b4a50c07c0bf73c61f3b89e6c650"],"a2-ville":["529ceab642fa3d4f8b65721727f86f11e0e259bdcdd536b471b18051ab31351d"],"a2-lorr":["927b2ad7219321153710fb6a06df6ffedd00717ab766dd3a93d0d62f751ae86b"],"a2-mut":["71190c05fdbfed290df1f994368d9ea4b52c4042b0f43d5b40d63254b6ef76b1"],"a2-super":["c74e94e59af47283d62b2f0c1d6ebda021921cde8dc610409aa7921faf7af4b7"],"a3-1":["494489cf0b2a50a26040028202b8dcbba20ef64757b4775d8680546d7ceaae25"],"a3-2":["8a98937e979c94bcef30ec345a2656581c336aa1bc50feabece46b219958ca1f"],"a3-3":["b1b66083d0fe48c24c85f194be83aa0df21d68db37626002d7821cad8227edd4"],"a3-4":["92e4fb9c5b639177f2c28c1080d6360525166474bee0fc95c63431a51e9888ae"],"a3-5":["7a0c6423cc0b2200e7b9cbef53361e97e797bd81d7c16b55f9af5cebeea95aa7"],"a4":["16401464987e6fd35d0f1f3230ee67f919938dd886161006788ad0c84f794da0","f515357ed8a2015e11d3eb499959156a0607cadbadeab05fae1d1a3a0b00953e","4fcc06d5eed0b596dcf5b8cd9f088da7ced21ac6d683c939c3be67d93b4d6b1e"],"a5-1":["2908a693dd4ba05aeff7d3399ef3c7de93ee1edf0f484252c4f7ad1038b5b867"],"a5-2":["116c7119bb4ce5b21376a684c9da55e87164952ba34eb86a66792d88bd9ffb7f"],"a5-3":["08391c11ac8b7634ff39ae21527fe57368ac4f2653eb64d63fdb43828232ea02"],"a5-4":["23ddd8b099b9aebbb9a9d811655490780a01e36f7ef847d5ad613916f2c1f8a7"],"a5-5":["71767ac145545352caeed7a160b7c9ec9100c8d3cc4b2d69098038a0365a49c0"],"a5-6":["175a1715fc589718e8663643fc8bbdaebcdb1b46a9a54b742d932c4fb5c5235a"],"a5-7":["f9cb3c7bfb23f49030a2c7004d9936fd558cfe4674849d027a0ac0d59e76263e"],"a5-8":["66107bf3806cbece50d66c0e8a658f44fcc416e754f17dacce4845531be07b82"],"a6-1":["75b0c3b29b8ffcf45f03ce9563ecf98e88bd71a2aa9ebdbc1abc7a91eae2256a"],"a6-2":["c1c498f905a4b09ecd35d894a61b6ce7f5432536d8be7d3358e29719e8d65754"],"a7-1":["2d82e6a88d2ddf41be65907d37e92af5874e0065ab3004d48caa3773e761dabe"],"a7-2":["ab01cbedaed54839cdad9692bebb90b175b17e57968d2b8ee31ffe7426ac58dc"],"a7-3":["c53deb5340f98b4da6591a076b2be0dc57eb9615ee49c09bc1dfb1debaeb372d"],"a7-4":["b2d06a69de5908fc35bce5599bd7397e36cdbb7cd4ac7b576dfa721cc0f9c909"],"a8-1":["e20b507e46d00efd4e8ae864a63f7356c58904bd59f6a96a4ec22613127f6c83"],"a8-2":["36af7fe384dc883af9a654546cef0432e45a0373e3b50a22c805bccc047eac80"],"a8-3":["b021270331033568be3c736c47a8393380ea64f6e85d4066e0f16bb58bc4fdde"],"a8-4":["947b6b301ae782ebf9e41f4001ea910519d5d1ff0b8b2c9788f3cd5e576c45e0"],"a8-5":["96aae501e8c738efdd458b4deb54d83099c0690c80faa56fc88ba708ccd471f9"],"a8-6":["43531a4771290926157be49991f3ac23433752e588de9abeaa81c77302003ba5"],"a9-1":["055165366640038b64f5bb73b514371c6e48a9827dddc042101bdcfd1b53a22d"],"a9-2":["7071725c02b20a04e4c6e4486f3803a543b3d10548c70b4a05be19d7f8b82783"],"a9-3":["5b400df9d450bb46427de7fb46ac5a0fee56d8d918ee0ca6749a7174014f9238"],"a10":["1befd51d9c8217ab54c36599f9d989a4c665738cc7ce4622a8a127aab2a3b503"],"a11":["a13fc14e1b8ab3266b17ffc132e0c243767f6bb807b5a1df077a91e007d73a85"],"a12":["02f788e66c235a68a0db2c22c9d51e26057e949846c4639cee264a795388bab9"],"a13":["d2407c76f85885d65675d16639ff93c55710c90723b5cf02ce08df02cfbb5aaf"],"a14-b1":["609affe950510b7b0d179efda2fa402151beac96c25a80965344af8b70f22e44"],"a14-b2":["8cb4119709eab5afccbeb5d1075a2e0454dad72cb5062e5aedb7019a0f851efc"],"a14-b3":["ae384b4823e8c001b3429d964cc277536863efc0a89642801eeb9508a7ec554d"],"a14-b4":["5319b08b7a7adf638450b8655f56fe306e5066ef3a02bb82f0f43fef458f1972"],"a14-b5":["dafb6712cd0cb2de12e0632461903933ff6c4c8c3c70887ee43440d8d77164de"],"a14-b6":["9da6aeae7c9ae36df3ca243bc171a26859c94e015f9a084db0e64454da97c1f7"],"a14-b7":["cf4e97e13b58208f2b5b813e80b87e6ed54a8dab05b05d202f6728b31db9f25e"],"a14-b8":["f4264e27a46da6b392208580701104b85a59b93729871337bb93b9a20d3cb14e"],"a14-b9":["4ab692a09516c4f838eba45353ea471a68bfbaba1f9b3104acd11f72d6c80bd7"],"a14-b10":["8e809d590b33fbe190e074fe8be595819cba588ccd2e90d8a39a87f2001e77ac"],"a14-b11":["dbff9f1a461950498dcf77b5c45f3c06e8bd1adcb4b162d279a7c7a85aae6db9"]},"kdfSalt":"mcuZefHPtJYHkSejbosBmA==","iter":150000,"corr":{"1":{"iv":"aU3gZB99prk2n5hT","ct":"O1NbgPlX0QSVTTluF3mE+NzOr5zRbULiNQTwIXGfZZgTUNUPnxubWxTHOB2HzdjdY5t6GwwKa5Xr4jJb281SJhBJSYkmV4Xagu6nDZBKRDptimLyStObwM8Z4STujFbDVK00BqJnqWLVSI4PHqFRqGRDU93apB6/9eNtd8Wj5vtP/s8nYI9SHkN58Qk7zYJiGbLUsmIw3Em+SByyqFhXKDgBBMtHr7Eiqo+3yNJGbLjPUgAMCw4WOypJAnfaHVwzRHrCBjFX6+d8jJK0zC6GnNeJ75pcrixSD1JffgomgOo55zRPoEDQhCgn9Mer8Sy5NdSDa2zijpUqAqbvW4B/uNPm3Fx0/xkMRbJpWdIrYCVrncsBwxE2Txw82BcG05IEnal2A3BRLlui6gir2CeyvmZYBKEhBO8v20fd4fnuYP7Z74IhlygjurOWRz9E4lK7wXKyxDXs1R8hGuXz4Rf9zGhAGPDG99T0HOeWOJak2//asbP45jrcBt2DrHZsFqbTumJgLRE9LikcwiM+n2G0Xw/evWlp31npaJRtLtvO+T8EbgWTe8U4ItA60bIFSqgdMAdfJZ/eZEj6dajOuc4AJVKY6Ug8XMYefPibTJrNsYTMxJTi/uj0k8FZMoatOEfgJ4CIcXMpMG/FYoIV67K5nYKljknPDKy2Quqoy9qct57wVeHPzJVPC/vfb+CEBL4BszH1aymC6tuF/B9uyLpYWK3S/Jg7CFPldhUFuR3wBe5XF6GSbJbUruvqwUkGGaI6BAVvrJuiLbT/+6JC1FrOY+yU9X+vD08EBbpQbwcvnXwUUskcbmOuLOZtXhqPgu6xwNCVTI2wBKxTT7PbNFMYkYI84SlxTcrbbz1NIKof36C8LtlcjT77svTKtXtBUeAIDPFTInGKStVeHKSeXeUgtibarYve8J/DAlIzCu33JyKhLgWUHLIu6dTMEIQtOZLCzagnLC4xjOGoiaPfVtkQFG/f92HrlBEA59cbI52nMDoLIfG+wXPMJQAcww=="},"2":{"iv":"KyTSjMQA7OoF5Mdk","ct":"xPw8lAn2Gb4bfAhOT67NU4s6jcXReCFlZ3TbnABCOrjc2mFtrk95FZk54HDl6cKGHYwVWDHhE1ji67mNYP/wn0crkCbb8oR+plONeHOPDbKPJbbahDw5xgCLTxMylqFMqZ67Qif3gQTYKazqTpWO4brhNtTLVnif1mOMNDGAWNhMdVOE+sBqCU+JJVaQ28lfddbRM5/1Kp+YADiZt9E3kZpgkybZXnpmSR4W7FCvYgUrMGRMmkHeL0DL5vyOyEKxo5Dn94DDwBScuWLDGY9LJLX1OmGb0uZyRpwsXxkjy2SqdebeKRyF+y9kCK+P2KKiUMtg4+IAW4Szpi3r2Zk3Qq/5wFErFzhRPgOpheyIuuHBpQltwGfOCObAIeZQoacA9q6Xzi2muaVAjqOeDPEULSiZS+ST9B9OiwR77iNbmh6wom/VxguCpqntIomIiWTNpBpCbc3pxmck8ZVnK7xnm8DwqCmp+bt1DuQQjvgX5b+qZXq6SeVkogFHEEsScLyst1Y7fZnBWSvF2/w05N7aao1BA98mfJY469SWDQ/xES86QO+vPkE68oc3cNGoglMZWgXGHvdRISmwnEk0g2xH3hIY13A1+gqQ1BaAHGP3Bpie/5dv66DiZrp30A7qCtb6y76/WpacXyufOhdc6qw2s9Ls8WOfgO/MFf62ezskDR7tOZ+NUI4V7ALzlJsvO9zEPqwejqIqlsXha/oXbAX+TWdm9x9cbluOcGEpSSD0qJDCZfaNr7qVJTJjKlCfvfq5mgG4ML686/ZIXL9AyH3+JtitSpY4RD6aFlXn7CeOMshojw4zlYqDNLcQOQebjk44LrZ7j4v5eDxvdxehh+AKGWVYiezLdGqPFQIWSIPBTtM8XVXQ/Ml8xtfi+emeitp1SVwWom8QQvBxHXy4p7oJE47DxsMU5sTr5DNTKyAcESMuYBhuGQg8OOffPRUlvV7OHvfBGRn1ICzeL7B/c0hrnPdPwD3L9+zym07YD2Y7gmn/B6QLyAoODBdVVoR/61a4XDqOBNNVWFZrpesJ56wJCaBfkxLkaBpPeUtaDuPwFLHtxC5sazRbZ4LkLJPAYvbTMmxt+h03AdrJD7VvLXcGzjLb0ipW1aL7"},"3":{"iv":"gNXGBcq8ONWeg+Tm","ct":"qJUiyuFxv/l7u59+aMnbDSXAJwp+N0odXqcl0UWJI4XIEAmWX+Atw/qVTSRmcH7dfGdA9Yq+btSRfRpP0/qpXZ14J2/W6KCmqhnlN74UCI1fFH4kMfcyJ4e01GeuqCBIC+RdhLmRiZUc3kpL9EN64R/zR5o7xEItbhuMep6TBGRyj5FjXYQf1kirg85owWL7ZI9WnuDt/vcXvmDzURPr/cCwJXTIu9pJbwxbl5d38J70JHL2AdidAJQhZSmGSFTaf8DWSgH2VAtMqL59CM2wFra5KToxrKfThTMq3ZGTVwQfJ0k5uWLDJyigCs3NHdP4ziG3maAgF/HklVjqW74kMLA5+P6uJPpKl+McnV/o8zVocyzfkn1hNIj7WDyC7v4StpTEdHKD8J1tlVTB4XtFz6gjGvjUOEeIhBrEzQyr0VLXjzhsFoAVeoq8XZfqQjjehY4S9bV7iLYYaTZkL5Fkp2sFrKPpvc6UeDlVw4eJWbM9unfKcuxhqJZqSu8dsejVYZjoovQJYtqdDRoicduLO/1h0uRgRmpsMDafYjeeNe0zJ8M96KHb/T1Oa/XLX3WQw0xuoEFcLjUmX1nwvtGCARxK2xP1JP2lk2KqWZr4nR7IeVz7MmbL4Afp3WHPFaX9Pd0K8TuyKr99Ilu4m3L7SIJ3OaWx1h9sRhSCqnK/HbniQAH1U1ou2Uv0nhJIcYOLSXcq7n3Z8A0o6ktnZjoV49U0arwe2aWwA6Fc6y+8PLLTrDw3KBILoHWE8EJ4xXTDeRLnuf5oyvKINbf12yax03rV"},"4":{"iv":"G9qxHumJvWI6Ryrg","ct":"SgCth+ludVCSXLQXluBMtMFAmi5iw4fNwS5K+87uep9ZyImI70lXm5F0prfQYjDC1gj8jMqJdL8SjuSyXvca/VXpNJNlpUZ/CETyB3UsQerFWwtp4gtOcrJJbeYKUCyCn70imqMsZSs76xe4I5DsIxMyew9zR0JpAeyXgYiS6CifIv1F+FwJIN8zvUD0Al1f4HVReu5n6s/px4tupTxSVcNlz54R4QkBZiVLJa7Z8/IzeP1mmqR8e13BrwkVtQ6N+Gx8RNDAr6/hp0OZC2ivZHzHM/YWoBJcnfaLnIrI5C5IWyz1soqv56qrMpDSzGEvi9c5eMb5LaWaYPSrfAj0Mc1bhpOWA+eWVEU8n8AcP3R7fzukXga1aw1GC8EnI6kR50jjcDNTfKd59X1JkZ/jNPy586HHfeStrf9UrBA2fcTR3TowmViBhFIy+XyFNurxlJ2DXRsIrQEBl37WoSpN5pMXMFFKo6ID1/ZFFUWAN2QKzVBZB99h/+kM"},"5":{"iv":"b+ywGcOXARvr+qtv","ct":"g9Hbtcmy8UapIjkHmS0Kjqfe3hnPjLPtr8O0u1xgUkF/3vreiC25d5CLhwCi5gfzu24tXH0zA3muDojhka8hoakl1dyz1w2wmOg+felsM5AfxtCKdJ2yIYzmcD5b2jg+PUutc4NlvZMqXuT3OjlNhKAGmCgAzBLFYnlZMwb0zW7Kfd8hbxsCoFGc/p4OKb+WMzvdDQZJZhmqnxVpiblIFhjMu5OUTW1a7YpvjltD3daOYLepSXDnBwuMda+HKuaDO7xD0P5MkhxwR5IkgDalJkuN2s6TOPD2niIiMgYJlmGyqJus1TvCVdlx2DMxdh+xVaIpo8JuCW0TD8cLtz9OnhWUz41/5rEqAD98oIGGyfrNICaFbfaZjxWZ4GS3KP+8jEWfSsAsd8+4Lr9fvhRZKE3EXfVPOGmhepIbX2yvysknNPC1TvgYXMBJ1/oImOhOZDbK6m28IzaediqRCIfJ+7eY6XImWqyUMRM5b0xH3CU3ZnnXa086lrnnrvU36BCVC4LRynmFRcRjD2nf0JgLSqWZw+FAY5WP6/5qEPa9OdkIrrM+TTswKmnyYXGQqzyF5HGipwUe1SUY60CtBB1y2vNr6j19fb3AgUwZaSiEwbp4KNzIW3K+7l7406lR0glKjaYbe83V/MSpaBxYskRTz84qKTt3FRSqJ0MCjI+/aVRCbdaOeXz76oNeH39cvmmj8rBi5U6iZH5o9kLceLma4hm+ripIKqq9IUIQCC/cDoqpm0F+PmsRsX7lz6iSHpjAdkbg6GzLprblYfJ3FFxmS5ZcuRct2vL0S2vKvgqbqY4H/UENpedVi42PbCaVhCbj14S51EVBGL3ZDqWXRS8mdm51iSs2DWf7OtPuaHqwgsW5iOiPj74YmPHuN3seu8dW5zF1I9v9entTp/ZmmjMGHfMipjWNhymG+P+918Fn0qBC8RyPpPpy/hY5eeGVfAFjxq/vRyvygBot4UmlbvvYBT7NzSKB096mniXvkV3SFGkjyPnPR5YItj3WImQiEGM/XrqhAvMqH0nOIJKJQL8c29ozOfymCeRKCEh/Ep1HKUG5n+jtsMU+xzYPZ3x14pDb9aE2hqzrESATgcf/hYMquqr2Jjijbd5OUIng3l4N7bNY4cF1clXHtStYLeDl1nQNHlXSSC64f2N8HC382XytLqbTaGDEYNP18LjYksWQrZIb5lHHZx6AzB/NEjyoL2fqjuDTo2AWzHgY8Z1fDvTjoV+pDtwsMIEQQkw3w7/aDs7HawGKmB7QWppSApLCyxJU4q/TUWuNbmyl+vcHLbxgAVCpPS/w6mO/fnA0WGDWSbCfm7upBtJqf/dOGlv6Ck8OwV/Uu9pTAcUYBiQCSiaJn1b7QYeMwZdHjDocU5hvaEG4RZlWFHWNwQsv1x+xLMagox9RB4preMnmxuxiu61+M/iQcBFZFBBOwdM1lqubdDt3vEGSitnEP9AAb56G9URnwqp6WW8hGa1sKw=="},"6":{"iv":"PnENVNIc8gkuWNLv","ct":"13BaItmn9A/ysdr2h7VSyeCmF9l8nrbY7TeO/lB2XnVeuvOl+2VY/CN2AivV3aDLLWPDxNuB1DUdITeQK2WYUBegoTJ9M8QXftcWncEfegySbUZkoyDwJfWSOuBCglI4zxH1K+xmDePQC/5OFB46jJ4tbzohos8U7JezstaFI+5+ZYyHTtFwBhDC/7nYbRSucXTaF6cHScDM7zY0PfJXYziS6DKicOHHJQZ4802SaP2l1iDWVMA00JGJzOjW73Rkxq9YY59doEUlAgFSE87M5+XHwgtO6Rf10Hk2WzEHgl0+oomGqibStxpoGOQg0edp/X17+QHYJOKpo7AyNKfraPwwzhcsU2g0GeJ2uxOSMx+t/e4lOS+IVBBCBlhudQ=="},"7":{"iv":"yN2/1tY5IhIwiegI","ct":"Z5Jb9q1Iig8p/7v9QKsYpZ/3JhgG/s4Op0oJZMUs0ZaArrNq5CqzDLTH0hmHNtWvV1ty/MkG/LsS5GjcELRLXchtZGTmFlSU4XIR1NpEgiJV6iBn1MeIgm/YQICvblK7qeY7H7o8LWosX2P8ZcQnaR1w9DLD5oiAefNgF7/8dkPkQqGBA+oAYBYeuohE8YqMxynOkAo6YfRjV3ml2Xr7RyxUnazmyKTMEAQ2N2fdLbhCD57hZYPafSWU144D/iz543iBv3nweWlnXYTDgQ/hzbQ0x2OQqOwxJhcNLT1pbJmYHar6vPD9g2LHVPmeFSJ7g17AH9uo1rqa67e8ot9ahIXUQXArba9yxVKGEkosvCvC0r8xWb+/BZnZR9UOJMv3GkjW9uaUeXJT2uJ3DMnAcy8JZgqspyA2vKTbi1QWeZQGB8y9HzKijsAxngGrltv7PHoDvmJP2QRi6a+665i/iYHb3p0hUFl07Hdw56KDNbnWnjDyfjyUfBed3QHQ35Sgkxl5/I0BvMZG9jTvHrfgu8qE6z+x1K43pp1qTDGBj9YCXkJdN7KO/kVozhkAins1wXm/YMmdeFX6ONK5s8a6gyFRFayAP17uECKRHTQFqgp1rJErZ1JjHdACaa/jyrrNPdSCWCD3aHbNKttNIc9fZUcdaNuujSI/SEwLJ1nI82WSNq1EcqXdF6iCatMLkC8F+J5FBHyzDUG8iIsFlPMnC1kj2d5U1PlHYTuHbzgQ3WQJ+x8/sVi659rPZLEtDvRSuHTAha4NZHX2rxMqbI32iBX5cNWyo58pgcRTeFksxTewJ7BrgwyITgWtXlEz2w0cC7VOHyYbzg/WSTi7Y000"},"8":{"iv":"mSrmxRJgFin09r28","ct":"SrZb3hqQNPv9nfL42nOIu8zYMZoDE35SJhfERtEfUOvpLQjfjddFO4yX9nTHafC1ejC4ZaJkpb1PCjTCVUztjSRSkY1kcUjtAE1w4ZFNQitzFMXro4IOC19dtSTbUOSXAyCISPYSBgL8QHteeQOM7vG5iTqXQ+53IiF7oZXJG5qbfLj652YBkSjTt3wYt+0AfO84LWBQEXWqzgtATfk2mBgtxFyXPH1NhUonZ63ys0bBRWTV+yyG/GjGPs+4NZU4Z3DshmztcR5WrUrp53sp0bVmo+xnF6hOV5xRJMkBPlUSrZ3RrsscWGdGColulckcd5zN9zfQB9m+sVpLLQFXoPc+HZQiGKx2PScuXs38vGXcexhHHkp7ASDn/ZWg5Pw6/YZuHm4ZT77I+uIe1PWn7sy0x+7jxOCLzfhqi0LpGDnBNQoftjErKVLrHgvHK/uZY7K8q1fOUPOpL9SYnPUGTUYnCwC/42sBXB9b8bxcY4Q5PQSxf5ED5iE08zx4Tidna98RoN0uN8aYe4jw/oFs3GEYZEH8uf+pZ8QXcF2VO+11eJox49BvTYpR0ocEAsYFMkwzXRLW63lo7tXPFUSj7oYzrJqPjagXxYc8MlLmKCy9zmOiZIs693P5+gCec8LmUrp9aOv3fGFhYdCgOkEPF2GvyFCaOb2tImoOJrrgGCI0qdeM0fDeR5cW0ngm619G/nEZVTyZ4rIrWuHhoz2YlC8wcrxA19hY9Lz1MTZgl9MwP5AiMOImGpa+Q4NNLnYkQ/Ztm0GuqNNmyyKPqPLCPpu29yp/5Xzembx8edaXsb9EPRWnMrI1BtIgrosy9GPuW7UgDpENXe53QjsWq8hZIaCQd1h1lilDCF+ZnIIHOhtW2keSg6ckf2B0nJ9vihXB7ogZJH5RGuW+iEBuAXAZr4mEMIfmaut66VWUYXMcqBgcU50tCTjSfcr2BGb6Qlb/Z3OopYxybRL0HLe674yUWtX8vmN1i/Zq1GZUpDzLVxXqDV1eQCSS/YZGC9yxn0wg"},"9":{"iv":"fW822ITi7xUW3FYQ","ct":"Kp4HiBycq7ejmRZRJLht8JTxH8vjC8MO/pbUYJ3TbPAhz5ezpkQLehlNb0Ue3JRnN0H9Y5l0qmZA3DeYN5q7cjRtClsKw9NWJqKyJ4okj40F27yciyvt6wf1yMdgpWHhAUYRWhM1wjbET17cdgZjSWPiKazCZwezDY8N35SnWWlWH1guXK/ahBBt+2pbMvCUkvqB3wfThXQyCB+JT50qqLUdf3y8YF8hOGRzKV/QjGMtlFnTwj5NQjDw3BwXznw0bnoy/kBkndnzH6H4Cb13lxP9HmUJu6vTVNICymxq0vIMUxAChjtbz82VJBRm7DwG9Zo375aryJCX8UF5ZFJhKqg73vCmFagZ1/QHBFaoGTSfzSVJUa9W1gVVgyqJv459XXB4+Xq/nhcSuWVkNkXfpsw/7S2x8WBV+PCjsFg7ppzwIBt8DIPB9ITVziHJ+XAY+KGF+4u9P59/EdAGzaBzPcSruBO0qopkonUtR1Mvgn1GFcuVSsA4dcAKc/nepEn4Dodn9kMzftqFPaNE6aC08EF9TRwkIZUz34eJT+EAbediBVgcYi1+F7N/sZ0XV7eQPvFPFKGR/bWresvXcj1vNlmXnPMYXlTuvH/u0sbmrCbu7WMfKViOB4SS6fjGnquK70R8B8m64CqI7pqRVA1fXjUQAn1a776xFwSvn9DyWzk/f/j7YGt2v0wBfrpyzSRiMmGDxZacF720K33UVTpaVso0R3FYfVYc14aOC0laST3j2pbiFKLx7sWme7OZttl2IWi3FB694ygnq69Kru8nLFJB0Pc9HpAfWJLaGyNhkSyulqVRpW9w4KUVikonl4tQH4Tj/TGgF3GmSivVKuZ3cLVJ4kouLfwjHiPB+A5Ts+PyrnNbjl7/zarMcg2UsBcZ9jk4lo2N6cc/mV88XbVJjLUjA5jZK7zDgr9goNAd7St5op7dNGVQ5s8Rm3Tuar7avXLRng=="},"10":{"iv":"9/DHJ82d6lW4KHvW","ct":"/Fams4xUcQudtFbcrPWqgrZ8mfyS0XX6JrTbLOIw+BbO1LxfI/b7januwuJraRIhxzPbFUh5g8ILqtgz2KU6bC9LT0UqZ8n+smnA5aIvOmr5yVOow5Y/E9pvfORHA5yqJiRez/X2FegmJwOpWzDYPo8SynyFYgQavjYBuAYpmljeC2ZRS+57IF2OXd2DZJ9DtvEt++JqBGw6ltr6tcQF4BNZDxe/FuF3lVX8POlBhaANOBz9YLvWoUlHzWjXiep5XaX6Dd4FZTDRkgq81iVpgG73l1l2SHvyajARHRufpqPO5LAAwAJ0dCzTQxDNxiADTmXSXjsTcqcjaKcD7F3SCnbM1DKS6xl7eJf519AwbKABUujmCu06V6hsZE3GCoaoynGmSTYccTCNUW4zUMC+0I30OHP1ZJv0X0BwM4yvm9f8JV46v0Kj1CZz5ZfQtjmcmcI1tB8Cax0IWT64Q6qNjNQmRrJ7K7R1kQRFPP87+n04wbVG9eF2BcamKWeVEIMAUJNYgMISO9JfzGIJ7jLQfiMDVa7dSkvnMGRmDJB4GXj8moYB6+bX4czqTepGxjSVXCIezwNYai9gj4R7lWxY/e0MemsJFcaHQt1WaquOltqduO1EtfxKzCMifWSF4gTWL/fBH45qfywdTb5t+iVojyVwe6fzRkHJ2RaP9Yz2S9/1x2qCtpZfniNemg9OFJ1AdLXiGsT9RLu9VC8A15GgK4tcc1A3zXXjWlDnga4FnkGnSg9Yj+LYMxMfH7+US8VOEGQuxA=="},"11":{"iv":"ZIzkB6oOPVd/k7N1","ct":"r0P9Abwv4rIpypLGbzZDEKR0p96I6KbfRw9Rb6f489pir4lTdoz7N4Pjb7+iHsZ9mGc31NU5S8BqKIgyfnYN0mpDsTqGtJ9WLBsCvqk6RN/vN6bEFYLaejk16B1v3cWLLknNcGdHh+cAWF3wblGO2Zgd5DzarMg4I0rVhjP+I6cUfcsxPRVp414Gya8LKS+FSfXuzRikpiI+wfSUG7eQFAy5jU3L+qZ6u5cdspKZQZfFGHvkhKVzUDt9/rLLbjmxRm2lFw3+rt5cVehCEhppl+E/j8wh/PwjL+EjO9CgVUcQ1oVAOZR9QBGmJujoPDCzA5y+VZPXlQSJk3rLLUZtQJ1x1OpiUST9IDWPQG1eR0FTfnXmaA6iIiAfehfCCOukc3zwL1jpMrhjkIZVb15nclO/1UXjpeth9gAm54MC6y8eIoWsNT3LHPtCH+5lNbVTBH/ysbsxoL4IR38zY30EqiCWf1gj3EDDOkml/ctlGA07eU0Svtn3aZvd41uLnVZtMiejTW5MAyTzPHGlyON48uQKR6z+tfkGh8NUngqPlzrvtrr66JXVnA4MO3n/9EQgaxmISnK+eFP8JZQlt7gCfdVXWtiA3SkCmn6Uj9UbLCntm/X/8/3+k//BjibW"},"12":{"iv":"dSVUtp8BIkxMZHRr","ct":"j80Ux22i3ii/E1dmncuGWJt3R8NaUfdKaU9G/SK2sX/168TqXlI093fW4uIyH+TQbvrXcbY0gvsH0AeRcLet4+hZGk9RxAA7AUb1LIyNC4UGdw/x+WMdYuGm9vv8Zv57wmHcImdSeVTYMI1aXw5KG0bFpV+oGdn5mBKrACT1Hjs0LgoBQto0ajaj0b0fnTNmAiyeNzg1XcBbq1Ygs6UzCS8KcT4il2XS4Q5dHHVufOTICpOxT1degB2GHDhmEg/KdkKxGIcvfpdAzy64RRAEy0Yt+bU0RfL5d90l69+iMob0P1XxxUFjZAyp1rhNYteBvL0pYpzpDCdXZ+mEM1tqJ8FG/a83zcWBTeO+512Kq0Vm04XYeRO2fh0ksGJ1tPRiu9NCmzF5oYa4Cd8OB9nKm/RWVFAqMl5Ko0ajw5SaJahSGXuVDDKguothmIIZCUfJphS9SDMBGUdmt+wC0XOPXM7xhzwFXno2jIk8uQ9lOZToJ/TAuED5RZo/C6C8z4OjDF6bUHa3DY3yl+x5ogc="},"13":{"iv":"0C8/HR07nMvwf01R","ct":"53fEJ0gUcCjljIDgx2GgrWQW4rYdfIdh91Vc+XNZgERutCjHzr8Ub7/hA6F2q0k0AFpYAAzPoYLNGhZT9F8DpjDxtD8/McfIyE99djOjLuzkghuKS+YwBfwmdoqqwJIeu8EFBz+NQt7epooUq7Nns5yaXdeAivgwKUo8KegeiimOoAnVDt4Ijrq2ssTl4/bksBX+fXOxNA2R+Lw75pEPudZTi3BY+TtrlkGaFWib3ZwEU7qpKE97/HPDxRmeGmkS5ObFICTJSW2UJiRwB3qJ2/oHRVX/tATIgyCNqsi5+YXK/2BlgTCO7kGSp4ZR61QZPEPhWOVppaaeg0BZj/sHIN3irJyybn6FmmyTALax2z9ZRjvAd52PcimBGApGjtWasPHo/4l8Xo9QiERNMDJ8uDeQejf1baLBErNuuQVyJrGXDm91TUKwlkxshccAW/LpbTFuRtsxKWTcTcVn6sGNfEfwSTbMMqSf542NziHripGQc97XqDM2qoSqa/BJNxBNzK2S15nDMXEo8TaLKiH7e1wwvOkX3WcFXIRwdEtj+H7ljwFUcd1b4AlsdX/zTSG7ooysHXKbz21gROtOIcpPAB9gl8lw5dLVgFGzEyaMeOyL6x5ji1EHLNpeaab6OswUnWAwXlcaKI0JXIKE/bQOezkEt7JrVtVusRNkgtpj87/g5PLSJAn6zL7MxsMpIiWOAgiTq3G8hbuVsla93T6FunYTa6rGJXgjJ/teKy9ZGMM3PH/ptw8BXQOQFfcOlQVAvHtHqm7BEeru"},"14":{"iv":"WtyhUUnLJac0wllU","ct":"ByLy5oNCN/jji1wSrZAEmEtnLwkkaPvF5dXJMPsc5wbJhXWpYGPbMQmGGXy6p3dlNvfwiwCKmJoiiNuiTRDH6UVOJ6r5GoxioSmU+ydvIC0siaM9w7R4RNJleVZNR/OpYLqJ2ynpGrmRFelyN093/fflCGDdoawiYrRsWohJuDawKp43Jyy4MW5pgsTN3WZnsFmR1jUlybZjL4x1a+XZtxFVsXZkLkxNirNCX+X9+ai4Li/nob5VdfBTeCMri+yBHNurAWFaxnE6LHU8/AFUxkfzgDMH7v/6tx1wtr+6ldn47Nd5cYrmXTjT02BnLl0yWH9aU8jSBdildW2AFgvVlrHIjL8nbgSj9LzuR3o0fZKA2T8snKNgYrA9Du7CYepR23MR9BChhRJZ+qLow3gTYIlrnPEMugOz2ZyyYKJdIp1/mAsjfGENth/zfqkOVXBzbhSTnPiUef3RKYymTAKGroxrbYLeByJVo8dDXwzO8LsLmtld+9Ko7n35oomqGkWbcJMq8SM2Ny4tP+YqyybqNgNvBb9JIUjmSu5yg5zRCHObICp3qqK/SPzaSFNjimgcHVnI63Q2dATpY+AYxvy9OBzMjL6keLEF+T7E4t+9YUklHm7FaCxTRuTjBd9xgKh+V4N1wb8g4bQrVzK/2Ii1ElpAvG8gjCbUZgqO190tAorrlqlijGZ9m/ReAD/7wNJ73yT0p609+bHRqfgutWjIR3E0KP0zsUWyBoCCIJ7w/NXAjIiwZZByFMiTcVGeOTUVS1LiHF8vadNePldgiJcu3EqLwTB9g/VMX5oEktzJxBqL7ZvZRhFokpnKwyEmryLAT0X/Dqcdum7SxdIuGVkZW+7USkhQr6XSj3rH25xHuKYiS2ounv6WnbCowWkwtrdj8ETjFrfjXIbbYNoTZJKOZqJEnhGMMg7Yi96iV4rAoaZl+cUWRtjbOsgKJjeQKauoz0QgTRHVa/sjfC3GLQYveKBOiCh9LWv/vhD5ZqpDjT++28XbenLo38aVlA+mbKOknd22MBNsVDFhhjcZkb5UCU2OLFDh9Pd5mjTZD8SwD0cV7tBRzrJpJ3vmD+aaR2Bl158YfjNQ+vIkGgDCAq+ZAT5VLdXY99s5hyWDdL/1lp8j7nQ6oOXO3INAo3SsWPJoCRa3wDiv9CbYTgxJO27PWGn6LChVCH71zep/Ad0xUr9NfT/tiHSRJ4fYBoMckWR2LTlmGsfWGcGqv26I5Z3Yj8DaqOSh69hyUY6Ern0hcN87eqUOu7hXksV67oax9PtHZj/5gvNht03W3Uqa"}}};
+const enc = new TextEncoder();
+async function sha(t){
+  const b = await crypto.subtle.digest("SHA-256", enc.encode(t));
+  return Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, "0")).join("");
+}
+async function isOK(id, val){
+  const list = DATA.ans[id]; if (!list || val === null) return false;
+  return list.includes(await sha(DATA.salt + "|" + id + "|" + val));
+}
+const GET = {};
+
+/* ---------- état : on compte les réponses données, jamais leur exactitude ---------- */
+const items = {};
+const answered = new Set();
+let agent = "";
+function reg(id, group){ items[id] = group; }
+function groupIds(g){ return Object.keys(items).filter(k => items[k] === g); }
+const BADGES = {
+  ech:{icon:"⚡", name:"Warm-up terminé", text:"Échauffement bouclé."},
+  m1:{icon:"🔎", name:"Détective du secteur", text:"Mission 1 complétée."},
+  m2:{icon:"🔄", name:"Maître des flux", text:"Mission 2 complétée."},
+  m3:{icon:"⚖️", name:"Juriste junior", text:"Le car fantôme n'a qu'à bien se tenir."},
+  bilan:{icon:"🏆", name:"Synthèse bouclée", text:"Il ne reste plus qu'à terminer la mission."}
+};
+const unlocked = new Set();
+
+/* ---------- son ---------- */
+let soundOn = false, actx = null;
+const soundBtn = document.getElementById("soundBtn");
+soundBtn.addEventListener("click", () => {
+  soundOn = !soundOn;
+  soundBtn.textContent = soundOn ? "🔊 Son" : "🔇 Son";
+  soundBtn.setAttribute("aria-pressed", String(soundOn));
+  if (soundOn) beep([660, 880]);
+});
+function beep(freqs, dur, type){
+  if (!soundOn) return;
+  dur = dur || 0.09;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const t = actx.currentTime;
+    freqs.forEach((f, i) => {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = type || "triangle"; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t + i * dur);
+      g.gain.exponentialRampToValueAtTime(0.18, t + i * dur + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + i * dur + dur);
+      o.connect(g).connect(actx.destination); o.start(t + i * dur); o.stop(t + i * dur + dur + 0.03);
+    });
+  } catch (e) {}
+}
+
+/* ---------- confettis ---------- */
+const cv = document.getElementById("confetti"), ctx = cv.getContext("2d");
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let parts = [], raf = null;
+function resize(){ cv.width = innerWidth; cv.height = innerHeight; }
+addEventListener("resize", resize); resize();
+const COLORS = ["#22E3FF","#FF3D9A","#B8FF3C","#FFD84D","#8B5CFF"];
+function burst(x, y, n){
+  if (reduce) return;
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2, s = 3 + Math.random() * 6;
+    parts.push({x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 4, r: 4 + Math.random() * 6, c: COLORS[i % 5], life: 60 + Math.random() * 30, rot: Math.random() * 6, star: Math.random() < .25});
+  }
+  if (!raf) raf = requestAnimationFrame(tick);
+}
+function tick(){
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  parts = parts.filter(p => p.life > 0);
+  parts.forEach(p => {
+    p.vy += 0.25; p.x += p.vx; p.y += p.vy; p.life--; p.rot += 0.2;
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+    ctx.fillStyle = p.c; ctx.globalAlpha = Math.min(1, p.life / 30);
+    if (p.star) { ctx.font = (p.r * 3) + "px sans-serif"; ctx.fillText("★", -p.r, p.r); }
+    else ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6);
+    ctx.restore();
+  });
+  raf = parts.length ? requestAnimationFrame(tick) : null;
+  if (!raf) ctx.clearRect(0, 0, cv.width, cv.height);
+}
+function pos(ev, elx){
+  if (ev && ev.clientX) return [ev.clientX, ev.clientY];
+  if (elx) { const r = elx.getBoundingClientRect(); return [r.left + Math.min(r.width / 2, 140), r.top]; }
+  return [innerWidth / 2, innerHeight / 2];
+}
+function floatXP(x, y, txt){
+  if (reduce) return;
+  const f = document.createElement("div"); f.className = "float-xp"; f.textContent = txt;
+  f.style.left = (x - 30) + "px"; f.style.top = (y - 20) + "px";
+  document.body.appendChild(f); setTimeout(() => f.remove(), 1200);
+}
+
+/* ---------- notifications ---------- */
+const toastsEl = document.getElementById("toasts");
+function toast(title, text, kind, icon){
+  const t = el("div", "toast" + (kind ? " " + kind : ""));
+  t.innerHTML = '<span class="ic">' + (icon || "CM") + '</span><div><small>' + title + '</small><p>' + text + '</p></div>';
+  toastsEl.appendChild(t);
+  while (toastsEl.children.length > 3) toastsEl.firstChild.remove();
+  setTimeout(() => { t.classList.add("out"); setTimeout(() => t.remove(), 320); }, kind === "achv" ? 5200 : 3200);
+}
+const nm = () => agent ? " " + agent : "";
+const SAVED = [() => "C'est validé ✔", () => "Bien noté" + nm() + ", on enchaîne.", () => "+1 réponse dans la poche.", () => "Ok, enregistré. Check les ressources si tu doutes.", () => "Tu gères, continue."];
+let lastToast = 0;
+function say(txt){ toast("Camille · coordinatrice", txt); }
+
+/* ---------- rangs (selon le nombre de réponses données) ---------- */
+const RANKS = [[0,"Stagiaire"],[20,"Animateur·rice"],[40,"Référent·e projet"],[60,"Coordinateur·rice"],[80,"Directeur·rice"],[100,"Légende de l'anim'"]];
+let rankIdx = 0;
+function rankFor(pct){ let r = 0; RANKS.forEach(([min], i) => { if (pct >= min) r = i; }); return r; }
+
+/* ---------- enregistrement d'une réponse ---------- */
+function save(id, ev, elx){
+  const [x, y] = pos(ev, elx);
+  if (answered.has(id)) { floatXP(x, y, "✎ modifié"); beep([600], 0.05); return; }
+  answered.add(id);
+  burst(x, y, 18); floatXP(x, y, "+10 XP");
+  if (Date.now() - lastToast > 2500) { lastToast = Date.now(); say(SAVED[Math.floor(Math.random() * SAVED.length)]()); }
+  beep([587, 784]);
+  updateXP();
+}
+function unsave(id){ if (answered.delete(id)) updateXP(); }
+const savedMsg = () => '<span class="saved">✓ Réponse enregistrée.</span>';
+
+/* ---------- XP, badges, plateau, diplôme ---------- */
+function updateXP(){
+  const total = Object.keys(items).length, n = answered.size;
+  const pct = total ? Math.round(n / total * 100) : 0;
+  document.getElementById("xpFill").style.width = pct + "%";
+  document.getElementById("xpBar").setAttribute("aria-valuenow", pct);
+  document.getElementById("xpText").textContent = (n * 10) + " / " + (total * 10) + " XP";
+  document.querySelectorAll(".badge").forEach(b => {
+    const g = b.dataset.group, ids = groupIds(g);
+    if (ids.length && ids.every(i => answered.has(i)) && !unlocked.has(g)) {
+      unlocked.add(g); b.classList.add("on"); showBadge(g);
+    }
+  });
+  const order = ["ech","m1","m2","m3","bilan"];
+  let step = 0;
+  order.forEach((g, i) => {
+    if (unlocked.has(g)) { document.querySelector('.station[data-st="' + g + '"]').classList.add("done"); step = Math.max(step, i + 1); }
+  });
+  document.getElementById("token").style.transform = "translateX(" + (step * 100) + "%)";
+  const r = rankFor(pct);
+  document.getElementById("rank").textContent = "Rang · " + RANKS[r][1];
+  if (r > rankIdx) {
+    rankIdx = r;
+    toast("Level up", "Nouveau rang : <b>" + RANKS[r][1] + "</b>", "rankup", "↑");
+    beep([440, 554, 659, 880], 0.08);
+  }
+  document.getElementById("dipXP").textContent = n + " réponses sur " + total + " · " + (n * 10) + " XP";
+}
+function showBadge(g){
+  toast("Succès débloqué", "<b>" + BADGES[g].name + "</b> · " + BADGES[g].text, "achv", BADGES[g].icon);
+  burst(innerWidth / 2, innerHeight / 3, 120);
+  beep([523, 659, 784, 1047, 1319], 0.09);
+}
+
+/* ---------- pseudo ---------- */
+document.getElementById("agentForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const v = document.getElementById("agentName").value.trim();
+  if (!v) { say("Entre d'abord ton pseudo 😉"); return; }
+  agent = v.charAt(0).toUpperCase() + v.slice(1);
+  document.getElementById("agentHello").textContent = "C'est parti, " + agent + " ✦";
+  document.getElementById("dipName").textContent = agent;
+  const ln = document.getElementById("lt-nom"); if (!ln.value) { ln.value = agent; ln.dispatchEvent(new Event("input")); }
+  say("Salut " + agent + " ! Bienvenue dans l'équipe. Ton briefing t'attend juste en dessous.");
+  burst(innerWidth / 2, 200, 80); beep([523, 784, 1047]);
+});
+document.getElementById("dipDate").textContent = "NANCY · " + new Date().toLocaleDateString("fr-FR", {day:"numeric", month:"long", year:"numeric"});
+
+/* ---------- cartes à retourner ---------- */
+document.querySelectorAll(".flip").forEach(f => f.addEventListener("click", () => { f.classList.toggle("on"); beep([440, 660], 0.06); }));
+
+/* ---------- panneau des ressources ---------- */
+const drawer = document.getElementById("drawer");
+const dTitle = document.getElementById("drawerTitle");
+const dBody = document.getElementById("drawerBody");
+const dNav = document.getElementById("drawerNav");
+const RES = Array.from(document.querySelectorAll("details.annex"));
+let lastFocus = null;
+RES.forEach((d, i) => {
+  const b = document.createElement("button"); b.type = "button"; b.textContent = "R" + (i + 1);
+  b.title = d.dataset.title; b.dataset.ann = String(i + 1); dNav.appendChild(b);
+});
+function openRes(n, trigger){
+  lastFocus = trigger || document.activeElement;
+  dNav.querySelectorAll("button").forEach(b => b.classList.toggle("cur", b.dataset.ann === String(n)));
+  if (n === "index") {
+    dTitle.textContent = "Toutes les ressources";
+    dBody.innerHTML = "";
+    const list = document.createElement("div"); list.className = "stack"; list.style.gap = "8px";
+    RES.forEach((d, i) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "btn"; b.dataset.ann = String(i + 1);
+      b.textContent = d.dataset.title; list.appendChild(b);
+    });
+    dBody.appendChild(list);
+  } else {
+    const d = document.getElementById("annexe-" + n);
+    if (!d) return;
+    dTitle.textContent = d.dataset.title;
+    dBody.innerHTML = d.querySelector(".annex-body").innerHTML;
+    const tag = d.querySelector("summary .tag");
+    if (tag) dBody.insertAdjacentHTML("afterbegin", "<p>" + tag.outerHTML + "</p>");
+  }
+  dBody.scrollTop = 0;
+  drawer.classList.add("open"); drawer.setAttribute("aria-hidden", "false");
+  document.body.classList.add("drawer-open");
+  document.getElementById("drawerClose").focus({preventScroll: true});
+  beep([392, 523], 0.06);
+  if (trigger && trigger.closest && trigger.closest("#main")) {
+    setTimeout(() => trigger.scrollIntoView({block: "center", behavior: reduce ? "auto" : "smooth"}), 360);
+  }
+}
+function closeRes(){
+  drawer.classList.remove("open"); drawer.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("drawer-open");
+  if (lastFocus && lastFocus.focus) lastFocus.focus({preventScroll: true});
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-ann]");
+  if (t) { e.preventDefault(); openRes(t.dataset.ann, t); }
+});
+document.getElementById("drawerClose").addEventListener("click", closeRes);
+
+/* ---------- utilitaires ---------- */
+const APPLY = {};
+function el(tag, cls, html){ const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+function shuffle(a){ const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; }
+function annRow(list){
+  if (!list || !list.length) return null;
+  const r = el("div", "ann-row", "À consulter : ");
+  list.forEach(n => { const b = el("button", "ann-chip", "Ressource " + n + " ↗"); b.type = "button"; b.dataset.ann = String(n); r.appendChild(b); });
+  return r;
+}
+function makeSelect(options, label){
+  const s = document.createElement("select");
+  s.setAttribute("aria-label", label);
+  s.appendChild(new Option("— choisir —", ""));
+  options.forEach(o => s.appendChild(new Option(o, o)));
+  return s;
+}
+function explEl(h, cls){ return el("div", "corr-expl" + (cls ? " " + cls : ""), h); }
+function tmark(node, ok){ node.classList.remove("t-ok", "t-ko"); node.classList.add(ok ? "t-ok" : "t-ko"); }
+function verdict(ok, given){ return given === null ? "⚪ <b>Sans réponse.</b> " : (ok ? "✅ <b>Réponse de l'élève juste.</b> " : "❌ <b>Réponse de l'élève fausse.</b> "); }
+
+/* ---------- Vrai / Faux ---------- */
+function renderTF(root, list, group){
+  list.forEach((it, i) => {
+    reg(it.id, group);
+    const box = el("div", "tf");
+    box.innerHTML = '<p class="q"><span class="num">' + (i + 1) + '</span><span>' + it.q + '</span></p>' +
+      '<div class="btns"><button type="button" class="btn" data-v="1">👍 Vrai</button><button type="button" class="btn" data-v="0">👎 Faux</button></div>';
+    const ar = annRow(it.ann); if (ar) box.appendChild(ar);
+    const fb = el("p", "fb"); fb.setAttribute("aria-live", "polite"); box.appendChild(fb);
+    box.querySelectorAll(".btns button").forEach(b => b.addEventListener("click", ev => {
+      box.querySelectorAll(".btns button").forEach(x => x.classList.remove("chosen"));
+      b.classList.add("chosen"); box.classList.add("answered");
+      fb.innerHTML = savedMsg(); save(it.id, ev);
+    }));
+    GET[it.id] = () => { const ch = box.querySelector(".btns button.chosen"); return ch ? ch.dataset.v : null; };
+    APPLY[it.id] = (v, e) => {
+      const ch = box.querySelector(".btns button.chosen");
+      const given = ch ? ch.dataset.v : null, ok = given === v;
+      box.querySelector('.btns button[data-v="' + v + '"]').classList.add("t-ok");
+      if (ch && !ok) ch.classList.add("t-ko");
+      box.appendChild(explEl(verdict(ok, given) + "Réponse attendue : <b>" + (v === "1" ? "Vrai" : "Faux") + "</b>. " + e));
+      return ok;
+    };
+    root.appendChild(box);
+  });
+}
+
+/* ---------- QCM ---------- */
+function renderQCM(root, list, group){
+  list.forEach((it, i) => {
+    reg(it.id, group);
+    const box = el("div", "qcm-item");
+    box.appendChild(el("p", "q", '<span class="num">' + (i + 1) + '</span><span>' + it.q + '</span>'));
+    const btns = el("div", "btns");
+    const fb = el("p", "fb"); fb.setAttribute("aria-live", "polite");
+    it.o.forEach((opt, k) => {
+      const b = el("button", "btn", opt); b.type = "button"; b.dataset.k = String(k);
+      b.addEventListener("click", ev => {
+        btns.querySelectorAll("button").forEach(x => x.classList.remove("chosen"));
+        b.classList.add("chosen"); box.classList.add("answered");
+        fb.innerHTML = savedMsg(); save(it.id, ev);
+      });
+      btns.appendChild(b);
+    });
+    box.appendChild(btns);
+    const ar = annRow(it.ann); if (ar) box.appendChild(ar);
+    box.appendChild(fb);
+    GET[it.id] = () => { const ch = btns.querySelector("button.chosen"); return ch ? ch.dataset.k : null; };
+    APPLY[it.id] = (v, e) => {
+      const ch = btns.querySelector("button.chosen");
+      const given = ch ? ch.dataset.k : null, ok = given === v;
+      btns.children[+v].classList.add("t-ok");
+      if (ch && !ok) ch.classList.add("t-ko");
+      box.appendChild(explEl(verdict(ok, given) + "Réponse attendue : <b>" + it.o[+v] + "</b>. " + e));
+      return ok;
+    };
+    root.appendChild(box);
+  });
+}
+
+/* ---------- Tri par bacs (placement libre, sans correction) ---------- */
+function renderSorter(root, cfg, group){
+  const pool = el("div", "pool"); pool.setAttribute("aria-label", "Cartes à classer");
+  const bins = el("div", "bins");
+  const fb = el("p", "fb", "Clique sur une carte, puis sur le bac où la ranger. Tu peux aussi la glisser avec la souris, et la déplacer à nouveau si tu changes d'avis.");
+  fb.setAttribute("aria-live", "polite");
+  let selected = null;
+  const binEls = {}, labels = {};
+  function dropZone(zone, key){
+    const tryPlace = ev => { if (selected) place(selected, key, ev); };
+    zone.addEventListener("click", tryPlace);
+    zone.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); tryPlace(ev); } });
+    zone.addEventListener("dragover", ev => { ev.preventDefault(); zone.classList.add("over"); });
+    zone.addEventListener("dragleave", () => zone.classList.remove("over"));
+    zone.addEventListener("drop", ev => {
+      ev.preventDefault(); zone.classList.remove("over");
+      const c = root.querySelector('[data-cid="' + ev.dataTransfer.getData("text/plain") + '"]');
+      if (c) place(c, key, ev);
+    });
+  }
+  cfg.bins.forEach((b, k) => {
+    const be = el("div", "bin b" + (k + 1));
+    be.tabIndex = 0; be.setAttribute("role", "button");
+    be.setAttribute("aria-label", "Ranger dans : " + b.label);
+    be.innerHTML = '<span class="bin-title">' + b.label + '</span><span class="bin-hint">' + b.hint + '</span>';
+    be.dataset.key = b.key; labels[b.key] = b.label;
+    dropZone(be, b.key);
+    binEls[b.key] = be; bins.appendChild(be);
+  });
+  dropZone(pool, "");
+  shuffle(cfg.cards).forEach(c => {
+    reg(c.id, group);
+    const ce = el("button", "sort-card", c.t); ce.type = "button";
+    ce.draggable = true; ce.dataset.cid = c.id;
+    ce.addEventListener("click", ev => {
+      ev.stopPropagation();
+      if (ce.classList.contains("sel")) { ce.classList.remove("sel"); selected = null; return; }
+      const host = ce.closest(".bin");
+      if (selected && host) { place(selected, host.dataset.key, ev); return; }
+      root.querySelectorAll(".sort-card.sel").forEach(x => x.classList.remove("sel"));
+      selected = ce; ce.classList.add("sel");
+      fb.innerHTML = "Carte choisie : <strong>" + c.t + "</strong>. Clique maintenant sur un bac.";
+      beep([500], 0.05);
+    });
+    ce.addEventListener("dragstart", ev => { ev.dataTransfer.setData("text/plain", c.id); });
+    GET[c.id] = () => { const bin = ce.closest(".bin"); return bin ? bin.dataset.key : null; };
+    APPLY[c.id] = (v, e) => {
+      const bin = ce.closest(".bin"), given = bin ? bin.dataset.key : null, ok = given === v;
+      tmark(ce, ok);
+      ce.after(explEl(verdict(ok, given) + "Bon bac : <b>" + labels[v] + "</b>. " + e));
+      return ok;
+    };
+    pool.appendChild(ce);
+  });
+  function place(card, key, ev){
+    card.classList.remove("sel"); selected = null;
+    const id = card.dataset.cid;
+    if (!key) { card.classList.remove("placed"); pool.appendChild(card); unsave(id); fb.innerHTML = "Carte remise dans la pioche."; return; }
+    card.classList.add("placed");
+    binEls[key].appendChild(card);
+    fb.innerHTML = savedMsg() + " Tu peux encore la déplacer.";
+    save(id, ev, card);
+  }
+  root.appendChild(pool); root.appendChild(bins); root.appendChild(fb);
+}
+
+/* ---------- Annexe 1 ---------- */
+renderTF(document.getElementById("tf-ech"), [
+  {id:"a1-1", q:"Une MJC est une organisation dont le but principal est de faire du profit.", ann:[1,6]},
+  {id:"a1-2", q:"Les Ehpad font partie des employeurs possibles d'un titulaire du bac pro AEPA.", ann:[4]},
+  {id:"a1-3", q:"Animer un atelier jeux de société, c'est produire un bien.", ann:[5]},
+  {id:"a1-4", q:"En France, l'économie sociale et solidaire représente environ 1 emploi salarié privé sur 7.", ann:[6]},
+  {id:"a1-5", q:"La résidence Chevardé accueille des retraités de plus de 65 ans.", ann:[2]}
+], "ech");
+
+/* ---------- Annexes 2 à 4 ---------- */
+renderSorter(document.getElementById("sort-orga"), {
+  bins:[
+    {key:"priv", label:"Entreprise privée lucrative", hint:"But : réaliser un profit"},
+    {key:"ess", label:"Organisation de l'ESS", hint:"But : utilité sociale, sans recherche de profit"},
+    {key:"pub", label:"Organisation publique", hint:"But : intérêt général, service public"}
+  ],
+  cards:[
+    {id:"a2-mjc", t:"MJC Philippe Desforges"},
+    {id:"a2-ccas", t:"CCAS de Nancy"},
+    {id:"a2-ville", t:"Ville de Nancy"},
+    {id:"a2-lorr", t:"Lorr'Autocars SARL (fictive)"},
+    {id:"a2-mut", t:"Une mutuelle santé"},
+    {id:"a2-super", t:"Le supermarché où l'équipe achète le goûter"}
+  ]
+}, "m1");
+
+renderQCM(document.getElementById("qcm-m1"), [
+  {id:"a3-1", q:"À quel secteur d'activité appartient l'animation socioculturelle ?", o:["Secteur primaire","Secteur secondaire","Secteur tertiaire"], ann:[5]},
+  {id:"a3-2", q:"Que nous apprend le code APE 93.29Z de la MJC ?", o:["Son chiffre d'affaires","Son activité principale : autres activités récréatives et de loisirs","Son nombre de salariés"], ann:[1,5]},
+  {id:"a3-3", q:"Quelle est la finalité de la MJC Desforges ?", o:["Verser des bénéfices à des actionnaires","Collecter des impôts","Répondre à un besoin éducatif et social, sans rechercher le profit"], ann:[1,6]},
+  {id:"a3-4", q:"Les « mercredis Génér'Actions », c'est la production :", o:["D'un service","D'un bien"], ann:[5]},
+  {id:"a3-5", q:"Une production non marchande est une production fournie :", o:["Uniquement par des entreprises privées","Gratuitement ou à un prix économiquement non significatif","Toujours à l'étranger"], ann:[5]}
+], "m1");
+
+function numberTask(id, group, inputId, btnId, fbId, unit, tol, fmt){
+  reg(id, group);
+  const inp = document.getElementById(inputId), fb = document.getElementById(fbId);
+  GET[id] = () => { const v = parseFloat(String(inp.value).replace(",", ".")); return answered.has(id) && !isNaN(v) ? fmt(v) : null; };
+  document.getElementById(btnId).addEventListener("click", ev => {
+    const v = parseFloat(String(inp.value).replace(",", "."));
+    if (isNaN(v)) { fb.innerHTML = "Entre un nombre avant d'enregistrer."; return; }
+    inp.classList.add("answered");
+    fb.innerHTML = savedMsg() + " Ta réponse : " + v.toLocaleString("fr-FR") + " " + unit + ".";
+    save(id, ev);
+  });
+  APPLY[id] = (v, e) => {
+    const g = parseFloat(String(inp.value).replace(",", "."));
+    const given = isNaN(g) ? null : g, ok = given !== null && Math.abs(given - parseFloat(v)) <= tol;
+    tmark(inp, ok);
+    inp.closest(".row").after(explEl(verdict(ok, given) + "Réponse attendue : <b>" + parseFloat(v).toLocaleString("fr-FR") + " " + unit + "</b>. " + e));
+    return ok;
+  };
+}
+numberTask("a4", "m1", "inHoraire", "btnHoraire", "fbHoraire", "€", 0.015, v => v.toFixed(2));
+
+/* ---------- Annexe 5 ---------- */
+const AGENTS = ["Ménages","Entreprises","Administrations publiques","Institutions financières"];
+const AGKEY = {"Ménages":"menages","Entreprises":"entreprises","Administrations publiques":"apu","Institutions financières":"if"};
+const FLUX = ["Flux réel","Flux monétaire"];
+const flowData = [
+  {id:"a5-1", t:"Les familles paient l'adhésion et l'inscription de leur enfant au centre de loisirs."},
+  {id:"a5-2", t:"La MJC accueille et anime les enfants le mercredi."},
+  {id:"a5-3", t:"La Ville de Nancy soutient financièrement la MJC."},
+  {id:"a5-4", t:"La MJC verse chaque mois son salaire à l'adjoint(e) de direction."},
+  {id:"a5-5", t:"L'adjoint(e) de direction fournit son travail à la MJC."},
+  {id:"a5-6", t:"Lorr'Autocars (fictif) transporte le groupe jusqu'à la résidence."},
+  {id:"a5-7", t:"La MJC règle la facture du transporteur."},
+  {id:"a5-8", t:"La MJC paie des frais de tenue de compte à sa banque."}
+];
+const flowsRoot = document.getElementById("flows");
+const flowSel = [];
+function refreshDiagram(){
+  const cnt = {menages:0, entreprises:0, apu:0, if:0};
+  flowSel.forEach(([a, f]) => { if (a.value && f.value) cnt[AGKEY[a.value]]++; });
+  Object.keys(cnt).forEach(k => {
+    document.getElementById("cnt-" + k).textContent = cnt[k] ? cnt[k] + " échange" + (cnt[k] > 1 ? "s" : "") : "? flux";
+    document.getElementById("ln-" + k).classList.toggle("on", cnt[k] > 0);
+  });
+}
+flowData.forEach((f, i) => {
+  reg(f.id, "m2");
+  const row = el("div", "flow-row");
+  row.appendChild(el("p", "", (i + 1) + ". " + f.t));
+  const sA = makeSelect(AGENTS, "Agent économique, échange " + (i + 1));
+  const sF = makeSelect(FLUX, "Nature du flux, échange " + (i + 1));
+  row.appendChild(sA); row.appendChild(sF); flowSel.push([sA, sF]);
+  const check = () => {
+    sA.classList.toggle("answered", !!sA.value); sF.classList.toggle("answered", !!sF.value);
+    refreshDiagram();
+    if (sA.value && sF.value) { row.classList.add("answered"); save(f.id, null, row); }
+    else { row.classList.remove("answered"); unsave(f.id); }
+  };
+  sA.addEventListener("change", check); sF.addEventListener("change", check);
+  GET[f.id] = () => sA.value && sF.value ? sA.value + "||" + sF.value : null;
+  APPLY[f.id] = (v, e) => {
+    const [ag, fx] = v.split("||");
+    const okA = sA.value === ag, okF = sF.value === fx, given = (sA.value || sF.value) ? 1 : null;
+    tmark(sA, okA); tmark(sF, okF);
+    row.after(explEl(verdict(okA && okF, given) + "Réponse attendue : <b>" + ag + ", " + fx.toLowerCase() + "</b>. " + e));
+    return okA && okF;
+  };
+  flowsRoot.appendChild(row);
+});
+
+renderQCM(document.getElementById("qcm-marche"), [
+  {id:"a6-1", q:"Quand la MJC publie une offre pour recruter un(e) adjoint(e) de direction, elle intervient sur :", o:["Le marché du travail","Le marché financier","Le marché des biens"], ann:[7,3]},
+  {id:"a6-2", q:"Des familles comparent les centres de loisirs du quartier (prix, horaires, activités) avant d'inscrire leur enfant. On est sur :", o:["Le marché du travail","Le marché des biens et services","Aucun marché"], ann:[7]}
+], "m2");
+
+/* ---------- Annexes 7 à 12 ---------- */
+renderQCM(document.getElementById("qcm-contrat"), [
+  {id:"a7-1", q:"Qui sont les parties au contrat de transport ?", o:["La MJC et la résidence Chevardé","La MJC et Lorr'Autocars","Lorr'Autocars et la Ville de Nancy"], ann:[8]},
+  {id:"a7-2", q:"Quel est l'objet du contrat ?", o:["Le transport aller-retour du groupe les 6 mercredis","L'animation de l'atelier musique","La location de la salle de la résidence"], ann:[8]},
+  {id:"a7-3", q:"La MJC était-elle obligée de choisir Lorr'Autocars ?", o:["Oui, la Ville impose un transporteur","Non : c'est la liberté contractuelle"], ann:[10]},
+  {id:"a7-4", q:"Une fois le contrat signé, Lorr'Autocars peut-il annuler un trajet sans conséquence ?", o:["Oui, s'il envoie un SMS","Non : le contrat a force obligatoire"], ann:[10]}
+], "m3");
+
+renderSorter(document.getElementById("sort-oblig"), {
+  bins:[
+    {key:"res", label:"Obligation de résultat", hint:"Un résultat précis est promis"},
+    {key:"moy", label:"Obligation de moyens", hint:"On promet de faire de son mieux"}
+  ],
+  cards:[
+    {id:"a8-1", t:"Lorr'Autocars : déposer le groupe à la résidence à 14 h"},
+    {id:"a8-2", t:"La MJC : payer 165 € par mercredi"},
+    {id:"a8-3", t:"Lorr'Autocars : prévenir 48 h avant en cas d'empêchement"},
+    {id:"a8-4", t:"L'animatrice : tout faire pour que chaque résident participe"},
+    {id:"a8-5", t:"Un médecin : soigner un patient"},
+    {id:"a8-6", t:"Un intervenant musique : faire progresser le groupe en rythme"}
+  ]
+}, "m3");
+
+(function(){
+  const CONDS = [
+    "Le car n'est pas venu le 4 novembre et la MJC n'a pas été prévenue 48 h avant.",
+    "La MJC a dû payer un autre transporteur et l'atelier musique a été annulé.",
+    "C'est parce que le car n'est pas venu que la MJC a dû payer un autre transporteur."
+  ];
+  const rows = [
+    {id:"a9-1", q:"<b>Condition 1 · L'inexécution</b>"},
+    {id:"a9-2", q:"<b>Condition 2 · Le dommage</b>"},
+    {id:"a9-3", q:"<b>Condition 3 · Le lien de causalité</b>"}
+  ];
+  const root = document.getElementById("sel-conditions");
+  rows.forEach((r, i) => {
+    reg(r.id, "m3");
+    const box = el("div", "sel-row");
+    box.appendChild(el("p", "q", '<span class="num">' + (i + 1) + '</span><span>' + r.q + '</span>'));
+    const s = makeSelect(shuffle(CONDS), "Élément du dossier pour la condition " + (i + 1));
+    box.appendChild(s);
+    const fb = el("p", "fb"); box.appendChild(fb);
+    s.addEventListener("change", () => {
+      if (!s.value) { s.classList.remove("answered"); box.classList.remove("answered"); fb.innerHTML = ""; unsave(r.id); return; }
+      s.classList.add("answered"); box.classList.add("answered"); fb.innerHTML = savedMsg(); save(r.id, null, s);
+    });
+    GET[r.id] = () => s.value || null;
+    APPLY[r.id] = (v, e) => {
+      const given = s.value || null, ok = given === v;
+      tmark(s, ok);
+      box.appendChild(explEl(verdict(ok, given) + "Réponse attendue : <b>" + v + "</b> " + e));
+      return ok;
+    };
+    root.appendChild(box);
+  });
+})();
+
+(function(){
+  const root = document.getElementById("multi-sanctions");
+  const id = "a10"; reg(id, "m3");
+  const opts = ["Ne pas payer le trajet du 4 novembre", "Demander des dommages-intérêts pour le surcoût", "Demander la résolution du contrat pour les mercredis suivants", "Porter plainte au commissariat pour vol", "Garder les clés du prochain car jusqu'au remboursement"];
+  const box = el("div", "stack"); box.style.gap = "8px";
+  const labs = [];
+  const checks = opts.map((t, k) => {
+    const lab = el("label", "sel-row"); lab.style.flexDirection = "row"; lab.style.alignItems = "center"; lab.style.cursor = "pointer";
+    const c = document.createElement("input"); c.type = "checkbox"; c.id = "sanc-" + k; c.style.width = "20px"; c.style.height = "20px";
+    lab.appendChild(c); lab.appendChild(el("span", "", "<b>" + t + "</b>")); box.appendChild(lab); labs.push(lab);
+    return c;
+  });
+  const btn = el("button", "btn primary", "Enregistrer mes choix"); btn.type = "button";
+  const fb = el("p", "fb"); fb.setAttribute("aria-live", "polite");
+  let done = false;
+  btn.addEventListener("click", ev => {
+    const n = checks.filter(c => c.checked).length;
+    fb.innerHTML = savedMsg() + " " + n + " solution" + (n > 1 ? "s" : "") + " cochée" + (n > 1 ? "s" : "") + ".";
+    done = true; save(id, ev);
+  });
+  GET.a10 = () => done ? checks.map(c => c.checked ? "1" : "0").join("") : null;
+  APPLY.a10 = (v, e) => {
+    let all = true;
+    checks.forEach((c, k) => {
+      const ok = c.checked === (v[k] === "1"); if (!ok) all = false;
+      tmark(labs[k], ok);
+      labs[k].after(explEl((v[k] === "1" ? "✅ À cocher. " : "❌ À ne pas cocher. ") + (ok ? "L'élève a bien répondu. " : "L'élève s'est trompé·e. ") + e[k]));
+    });
+    if (!done) { box.after(explEl("⚪ L'élève n'a pas enregistré ses choix.")); return false; }
+    return all;
+  };
+  root.appendChild(box);
+  const r = el("div", "row"); r.style.marginTop = "10px"; r.appendChild(btn);
+  root.appendChild(r); root.appendChild(fb);
+})();
+
+numberTask("a11", "m3", "inPrejudice", "btnPrejudice", "fbPrejudice", "€", 0.5, v => String(Math.round(v)));
+
+renderQCM(document.getElementById("qcm-fm"), [
+  {id:"a12", q:"Le gérant a-t-il raison de parler de force majeure ?", o:["Oui, toute absence de salarié est un cas de force majeure","Probablement pas : une entreprise de transport peut prévoir l'absence d'un chauffeur et en éviter les effets","Oui, car il a envoyé un SMS d'excuse"], ann:[10,11]}
+], "m3");
+
+/* ---------- Annexe 13 : lettre ---------- */
+(function(){
+  const id = "a13"; reg(id, "m3");
+  const $ = s => document.getElementById(s);
+  function build(){
+    const type = $("lt-type").value;
+    const nom = $("lt-nom").value.trim() || "[Prénom NOM]";
+    const delai = $("lt-delai").value;
+    const dem = [];
+    if ($("lt-d1").checked) dem.push("ne pas facturer le trajet du 4 novembre 2026, conformément à l'article 6 du contrat");
+    if ($("lt-d2").checked) dem.push("nous rembourser le surcoût payé au transporteur de remplacement, soit [montant calculé en annexe 11] €");
+    if ($("lt-d3").checked) dem.push("assurer les prochains transports aux dates prévues ou, en cas d'impossibilité, nous prévenir au moins 48 heures à l'avance avec une solution de remplacement (article 4)");
+    if ($("lt-d4").checked) dem.push("nous verser la somme de 5 000 € de dommages-intérêts");
+    const head = type === "md" ? "LETTRE RECOMMANDÉE AVEC ACCUSÉ DE RÉCEPTION\nObjet : mise en demeure · contrat de transport n° 2026-047"
+      : (type === "mail" ? "Courriel\nObjet : problème de transport du 4 novembre" : "Objet : [choisis le type de courrier]");
+    const list = dem.length ? dem.map(d => "  • " + d + " ;").join("\n") : "  • [coche au moins une demande]";
+    return "MJC Philippe Desforges\n27 rue de la République\n54000 Nancy\n\n" +
+      "Lorr'Autocars SARL\nÀ l'attention du gérant\n\nNancy, le 6 novembre 2026\n\n" + head + "\n\n" +
+      "Madame, Monsieur,\n\n" +
+      "Par contrat signé le 12 octobre 2026, votre société s'est engagée à assurer le transport de notre groupe les mercredis après-midi, avec un départ de la MJC à 13 h 45.\n\n" +
+      "Le mercredi 4 novembre 2026, aucun véhicule ne s'est présenté. Nous avons été informés par SMS à 13 h 52, sans le délai de prévenance de 48 heures prévu à l'article 4. Nous avons dû faire appel en urgence à un autre transporteur, et notre groupe est arrivé avec 50 minutes de retard.\n\n" +
+      "En conséquence, nous vous " + (type === "md" ? "mettons en demeure, dans un délai de " + delai + " jours à compter de la réception de ce courrier, de :" : "demandons de :") + "\n" + list + "\n\n" +
+      (type === "md" ? "À défaut, nous nous réservons le droit d'engager toute action permettant de faire valoir nos droits.\n\n" : "") +
+      "Nous vous prions d'agréer, Madame, Monsieur, nos salutations distinguées.\n\n" +
+      nom + ", stagiaire\npour Camille Moreau, coordinatrice du projet Génér'Actions";
+  }
+  function refresh(){ $("lt-out").textContent = build(); }
+  ["lt-type","lt-delai","lt-nom","lt-d1","lt-d2","lt-d3","lt-d4"].forEach(k => { $(k).addEventListener("input", refresh); $(k).addEventListener("change", refresh); });
+  refresh();
+  $("lt-check").addEventListener("click", ev => {
+    const fb = $("lt-fb");
+    if (!$("lt-type").value) { fb.innerHTML = "Choisis d'abord le type de courrier."; return; }
+    fb.innerHTML = savedMsg() + " Pense à remplacer [montant calculé en annexe 11] par ton résultat avant de la copier.";
+    save(id, ev);
+  });
+  $("lt-copy").addEventListener("click", () => copyText(build(), $("lt-fb")));
+  GET.a13 = () => answered.has(id) ? $("lt-type").value + "|" + ["lt-d1","lt-d2","lt-d3","lt-d4"].map(k => $(k).checked ? "1" : "0").join("") : null;
+  APPLY.a13 = (v, e) => {
+    const [t, d] = v.split("|");
+    const typeOk = $("lt-type").value === t;
+    tmark($("lt-type"), typeOk);
+    let demOk = true;
+    ["lt-d1","lt-d2","lt-d3","lt-d4"].forEach((k, j) => {
+      const ok = $(k).checked === (d[j] === "1"); if (!ok) demOk = false;
+      tmark($(k).closest("label"), ok);
+    });
+    const given = answered.has(id) ? 1 : null;
+    $("lt-type").closest(".grid2").after(explEl(verdict(typeOk && demOk, given) + e));
+    return typeOk && demOk;
+  };
+})();
+
+function copyText(txt, fbEl){
+  const fail = () => { fbEl.innerHTML = "La copie automatique est bloquée : sélectionne le texte avec la souris, puis Ctrl + C."; };
+  try { navigator.clipboard.writeText(txt).then(() => { fbEl.innerHTML = "<strong>Texte copié.</strong> Colle-le avec Ctrl + V dans ton traitement de texte."; beep([700, 900], 0.05); }, fail); }
+  catch (e) { fail(); }
+}
+
+/* ---------- Annexe 14 : synthèse ---------- */
+(function(){
+  const tpl = "La MJC Philippe Desforges est une {{b1|association|société commerciale|administration}} du secteur {{b2|tertiaire|primaire|secondaire}}. Elle produit des {{b3|services|biens}} et fait partie de l'{{b4|économie sociale et solidaire|économie souterraine}}. " +
+    "Elle échange avec les {{b5|ménages|actionnaires}} (familles, salariés), avec les entreprises, avec les {{b6|administrations publiques|institutions financières}} comme la Ville de Nancy ou le CCAS, et avec sa banque. " +
+    "Ces échanges ont lieu sur des {{b7|marchés|contrats}}. Ses engagements sont formalisés par des contrats, qui ont une {{b8|force obligatoire|valeur facultative}}. " +
+    "En cas d'{{b9|inexécution|exécution}}, la partie lésée peut obtenir des {{b10|dommages-intérêts|subventions}} si elle prouve une inexécution, un dommage et un {{b11|lien de causalité|lien d'amitié}}.";
+  const root = document.getElementById("cloze");
+  const plain = []; let total = 0;
+  tpl.split(/(\{\{[^}]+\}\})/).forEach(p => {
+    const m = p.match(/^\{\{(.+)\}\}$/);
+    if (!m) { root.appendChild(document.createTextNode(p)); plain.push(() => p); return; }
+    const parts = m[1].split("|"); const id = "a14-" + parts.shift(); total++;
+    reg(id, "bilan");
+    const s = makeSelect(shuffle(parts), "Mot manquant " + total);
+    s.addEventListener("change", () => {
+      if (!s.value) { s.classList.remove("answered"); unsave(id); }
+      else { s.classList.add("answered"); save(id, null, s); }
+      const done = root.querySelectorAll("select.answered").length;
+      document.getElementById("cloze-fb").innerHTML = done === total ? savedMsg() + " Synthèse complète ! Copie-la dans ton cahier." : done + " / " + total + " mots choisis.";
+    });
+    GET[id] = () => s.value || null;
+    APPLY[id] = (v) => {
+      const ok = s.value === v; tmark(s, ok);
+      if (!ok) s.after(el("span", "corr-ans corr-tmp", "→ " + v));
+      return ok;
+    };
+    root.appendChild(s);
+    plain.push(() => s.value || "______");
+  });
+  document.getElementById("cloze-copy").addEventListener("click", () => copyText(plain.map(f => f()).join(""), document.getElementById("cloze-fb")));
+})();
+
+/* ---------- corrigés : code enseignant ---------- */
+function b64(s){ return Uint8Array.from(atob(s), c => c.charCodeAt(0)); }
+async function decryptCorr(code, key){
+  const base = await crypto.subtle.importKey("raw", enc.encode(code), "PBKDF2", false, ["deriveKey"]);
+  const k = await crypto.subtle.deriveKey({name:"PBKDF2", salt:b64(DATA.kdfSalt), iterations:DATA.iter, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+  const c = DATA.corr[key];
+  const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv:b64(c.iv)}, k, b64(c.ct));
+  return new TextDecoder().decode(pt);
+}
+const codeModal = document.getElementById("codeModal");
+const codeForm = document.getElementById("codeForm");
+const codeInput = document.getElementById("codeInput");
+const codeFb = document.getElementById("codeFb");
+let pending = null;
+const LOCK = "🔒 Corriger cette annexe · code enseignant";
+function clearCorr(act){
+  act.querySelectorAll(".corr-expl, .corr-tmp").forEach(x => x.remove());
+  act.querySelectorAll(".t-ok, .t-ko").forEach(x => x.classList.remove("t-ok", "t-ko"));
+}
+document.querySelectorAll(".activity[data-annexe]").forEach(act => {
+  const n = act.dataset.annexe;
+  const zone = el("div", "corr-zone");
+  const btn = el("button", "corr-btn", LOCK); btn.type = "button";
+  btn.addEventListener("click", () => {
+    if (act.dataset.corr === "on") { clearCorr(act); act.dataset.corr = "off"; btn.textContent = LOCK; return; }
+    pending = {n, act, btn};
+    document.getElementById("codeFor").textContent = "Entrez le code enseignant pour corriger l'annexe " + n + " : réponses de l'élève, bonnes réponses et explications.";
+    codeInput.value = ""; codeFb.innerHTML = "";
+    codeModal.classList.add("open"); codeInput.focus();
+  });
+  zone.appendChild(btn); act.appendChild(zone);
+});
+function closeCode(){ codeModal.classList.remove("open"); if (pending) pending.btn.focus(); pending = null; }
+document.getElementById("codeCancel").addEventListener("click", closeCode);
+codeForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  if (!pending) return;
+  const code = codeInput.value.trim().toUpperCase();
+  const okBtn = document.getElementById("codeOk"); okBtn.disabled = true;
+  let data = null;
+  try { data = JSON.parse(await decryptCorr(code, pending.n)); }
+  catch (err) {
+    codeFb.innerHTML = "<strong>Code incorrect.</strong> Réessayez.";
+    codeForm.classList.remove("shake"); void codeForm.offsetWidth; codeForm.classList.add("shake");
+    beep([200, 150], 0.12, "sawtooth");
+  }
+  okBtn.disabled = false;
+  if (!data) return;
+  const {act, btn} = pending;
+  clearCorr(act);
+  let good = 0;
+  data.items.forEach(it => { if (APPLY[it.id] && APPLY[it.id](it.v, it.e)) good++; });
+  const zone = act.querySelector(".corr-zone");
+  if (data.note) zone.before(explEl(data.note, "note"));
+  zone.before(explEl("📊 <b>Résultat de l'élève : " + good + " / " + data.items.length + "</b>" + (agent ? " (" + agent + ")" : ""), "note"));
+  act.dataset.corr = "on";
+  btn.textContent = "🔓 Masquer la correction";
+  codeModal.classList.remove("open"); pending = null;
+  act.scrollIntoView({block: "start", behavior: reduce ? "auto" : "smooth"});
+});
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  if (codeModal.classList.contains("open")) closeCode();
+  else if (confirmModal.classList.contains("open")) document.getElementById("confirmNo").click();
+  else if (drawer.classList.contains("open")) closeRes();
+});
+
+/* ---------- fin de mission : score global, Pass à partir de 50 bonnes réponses ---------- */
+const NEED = 50;
+const confirmModal = document.getElementById("confirmModal");
+const finishBtn = document.getElementById("finishBtn");
+let finished = false;
+function lockAll(){
+  document.body.classList.add("locked");
+  document.querySelectorAll(".activity button, .activity select, .activity input").forEach(x => {
+    if (x.closest(".corr-zone") || x.classList.contains("ann-chip") || x.id === "lt-copy" || x.id === "cloze-copy") return;
+    x.disabled = true;
+  });
+  document.querySelectorAll(".sort-card").forEach(c => { c.draggable = false; });
+}
+async function finish(){
+  finished = true; lockAll();
+  finishBtn.disabled = true; finishBtn.textContent = "Mission terminée ✓";
+  const ids = Object.keys(items);
+  let good = 0;
+  const byGroup = {};
+  for (const id of ids) {
+    const g = items[id]; byGroup[g] = byGroup[g] || [0, 0]; byGroup[g][1]++;
+    const v = GET[id] ? GET[id]() : null;
+    if (await isOK(id, v)) { good++; byGroup[g][0]++; }
+  }
+  const pct = good / ids.length * 100;
+  const shown = (Math.round(pct * 10) / 10).toLocaleString("fr-FR") + " %";
+  document.getElementById("finishInfo").textContent = "Tes réponses sont verrouillées.";
+  const box = document.getElementById("resultBox"); box.hidden = false;
+  const big = document.getElementById("scoreBig");
+  setTimeout(() => { document.getElementById("gaugeFill").style.width = Math.min(pct, 100) + "%"; }, 50);
+  const t0 = performance.now(), dur = reduce ? 0 : 2000;
+  (function count(t){
+    const k = dur ? Math.min(1, (t - t0) / dur) : 1;
+    big.textContent = (Math.round(pct * k * 10) / 10).toLocaleString("fr-FR") + " %";
+    if (k < 1) requestAnimationFrame(count); else afterScore();
+  })(t0);
+  function afterScore(){
+    big.textContent = shown;
+    document.getElementById("scoreSub").textContent = good + " bonne" + (good > 1 ? "s" : "") + " réponse" + (good > 1 ? "s" : "") + " sur " + ids.length;
+    const msg = document.getElementById("scoreMsg");
+    if (good >= NEED) {
+      msg.textContent = "GG" + nm() + " ! " + good + " bonnes réponses : ton Pass Génér'Actions est débloqué ✦";
+      document.getElementById("dipLocked").hidden = true;
+      const d = document.getElementById("diploma"); d.hidden = false; d.classList.add("reveal");
+      document.getElementById("dipScore").innerHTML = (Math.round(pct * 10) / 10).toLocaleString("fr-FR") + "<small>SCORE %</small>";
+      document.getElementById("dipName").textContent = agent || "Agent";
+      document.getElementById("dipRole").textContent = pct === 100 ? "Légende de l'anim'" : "Certifié·e Génér'Actions";
+      ["ech","m1","m2","m3","bilan"].forEach(g => { document.getElementById("st-" + g).textContent = Math.round(byGroup[g][0] / byGroup[g][1] * 100); });
+      toast("Succès débloqué", "<b>Pass Génér'Actions</b>", "achv", "🏆");
+      bigBurst(); setTimeout(bigBurst, 500); setTimeout(bigBurst, 1000);
+      beep([523, 659, 784, 1047, 1319, 1568], 0.12);
+      setTimeout(() => d.scrollIntoView({block: "center", behavior: reduce ? "auto" : "smooth"}), 600);
+    } else {
+      msg.textContent = good + " bonnes réponses : il en fallait " + NEED + " pour le Pass. La correction avec ta prof te montrera où gratter les points manquants.";
+      say("Mission terminée" + nm() + ". Pas de Pass cette fois, mais la correction va t'aider.");
+      burst(innerWidth / 2, innerHeight / 2, 40); beep([523, 659, 784]);
+    }
+  }
+}
+function bigBurst(){ burst(innerWidth / 2, innerHeight / 3, 140); }
+finishBtn.addEventListener("click", () => {
+  if (finished) return;
+  const missing = Object.keys(items).filter(id => !answered.has(id)).length;
+  document.getElementById("confirmText").innerHTML = (missing
+    ? "⚠️ Il te reste <b>" + missing + " question" + (missing > 1 ? "s" : "") + " sans réponse</b>. Elles compteront comme fausses. "
+    : "Tu as répondu à toutes les questions. ") + "Après, tu ne pourras plus modifier tes réponses. Tu confirmes ?";
+  confirmModal.classList.add("open"); document.getElementById("confirmYes").focus();
+});
+document.getElementById("confirmNo").addEventListener("click", () => { confirmModal.classList.remove("open"); finishBtn.focus(); });
+document.getElementById("confirmYes").addEventListener("click", () => {
+  confirmModal.classList.remove("open");
+  document.getElementById("finishCard").scrollIntoView({block: "start", behavior: reduce ? "auto" : "smooth"});
+  finish();
+});
+
+document.getElementById("resetAll").addEventListener("click", () => { location.hash = "accueil"; location.reload(); });
+updateXP();
+})();
+
+</script>
+</body>
+</html>
